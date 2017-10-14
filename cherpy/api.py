@@ -102,6 +102,7 @@ class Client(object):
         headers = self.headers if not headers else headers
         return requests.delete("{}/{}".format(self.host, url), headers=headers)
 
+
 def login(user, password, client_id, host, grant_type="password", auth_mode="Internal"):
     data = "grant_type={grant_type}&client_id={client}&username={user}&password={password}"\
         .format(client=client_id, user=user,password=password, grant_type=grant_type)

@@ -41,8 +41,22 @@ class ServiceRequest(object):
 
     def lookup_service_url(self, name):
         s = service_methods.get(name)
+        if not s:
+            return "/api/V1/{}".format(name)
         return s['url']
 
+
+@attr.s
+class Fields(object):
+    _fields = attr.ib()
+
+    def __attrs_post_init__(self):
+        if self._fields:
+            for d in self._fields:
+                setattr(self, d["name"].lower(),d)
+
+def init_fields(field_dict):
+    return Fields(field_dict)
 
 @attr.s
 class ObjectSchema(object):
@@ -50,11 +64,14 @@ class ObjectSchema(object):
     name = attr.ib()
     displayName = attr.ib(default=None)
     firstRecIdField = attr.ib(default=None)
+    fieldDefinitions = attr.ib(default=None, convert=init_fields)
+    gridDefinitions = attr.ib(default=None)
     group = attr.ib(default=None)
     groupSummaries = attr.ib(default=None)
     lookup = attr.ib(default=None)
     major = attr.ib(default=None)
     recIdFields = attr.ib(default=None)
+    relationships = attr.ib(default=None)
     stateFieldId = attr.ib(default=None)
     states = attr.ib(default=None)
     supporting = attr.ib(default=None)
@@ -77,6 +94,20 @@ class ObjectSchema(object):
     def get_field_info_by_name(self, field_name):
         return self.fields[field_name.lower().replace(' ', '')].copy()
 
+    def get_fieldId(self, field_name):
+        field = getattr(self.fieldDefinitions,field_name.lower())
+        return field['fieldID']
+
+    def create_field_list(self, field_names):
+        """
+        returns a list of field ids for the field_names provided
+        used when trying to limit the number of fields returned when querying cherwell
+        :param field_names:
+        :return:
+        """
+        fd = self.fieldDefinitions
+        field_list = [getattr(fd, f.lower())["fieldId"] for f in field_names]
+        return field_list
 
 def SaveRequest(object):
     business_object_id = attr.ib()
@@ -98,20 +129,20 @@ def create_field_template(object_template, field_dict):
 def create_user_request(object_template, data_dict, field_dict=None):
     userinfo = object_template
     data = {
-        "accountLocked": "false",
-        "busObId": "",
-        "displayName": "",
-        "ldapRequired": "false",
-        "loginId": "",
-        "nextPasswordResetDate": "null",
-        "password": "P@ssw0rd",
-        "passwordNeverExpires": "true",
-        "securityGroupId": "",
-        "userCannotChangePassword": "false",
-        "userMustChangePasswordAtNextLogin": "true",
-        "userInfoFields": [
-        ],
-        "windowsUserId": ""
+        # "accountLocked": "false",
+        # "busObId": "",
+        # "displayName": "",
+        # "ldapRequired": "false",
+        # "loginId": "",
+        # "nextPasswordResetDate": "null",
+        # "password": "P@ssw0rd",
+        # "passwordNeverExpires": "true",
+        # "securityGroupId": "",
+        # "userCannotChangePassword": "false",
+        # "userMustChangePasswordAtNextLogin": "true",
+        # "userInfoFields": [
+        # ],
+        # "windowsUserId": ""
     }
     data['busObId'] = userinfo.busObId
     data['displayName'] = userinfo.displayName
@@ -122,30 +153,29 @@ def create_user_request(object_template, data_dict, field_dict=None):
     return data
 
 def create_save_request(object_schema, data_dict):
-    request_list = []
     logger.info("Creating save request for {}".format(object_schema))
     logger.debug(data_dict)
-    for d in data_dict:
-        save_request = {}
-        save_request['busObId'] = object_schema.busObId
-        save_request['busObRecId'] = d.pop('RecID')
-        save_request['fields'] = []
-        for f in d:
-            field_template = object_schema.get_field_info_by_name(f)
-            field_template['value'] = d[f]
-            field_template['dirty'] = "true"
-            save_request['fields'].append(field_template)
-        request_list.append(save_request)
-    return {"saveRequests": request_list}
+    d = data_dict
+    save_request = {}
+    save_request['busObId'] = object_schema.busObId
+    save_request['busObRecId'] = d.pop('RecID')
+    save_request['fields'] = []
+    for f in d:
+        field_template = object_schema.get_field_info_by_name(f)
+        field_template['value'] = d[f]
+        field_template['dirty'] = "true"
+        save_request['fields'].append(field_template)
+    return save_request
 
 def create_save_requests(object_schema, data_dict):
     request_list = []
     logger.info("Creating save request for {}".format(object_schema))
-    logger.debug(data_dict)
     for d in data_dict:
         save_request = {}
         save_request['busObId'] = object_schema.busObId
-        save_request['busObRecId'] = d.pop('RecID')
+        recid = d.get('RecID')
+        if recid:
+            save_request['busObRecId'] = d.pop('RecID')
         save_request['fields'] = []
         for f in d:
             field_template = object_schema.get_field_info_by_name(f)
@@ -178,8 +208,25 @@ def get_object_info(client, object_name):
         obj_id = response_dict.pop('busObId')
         return ObjectSchema(busObId=obj_id, **response_dict)
     else:
-        return response
+        raise Exception(response)
 
+def get_object_schema(client, object_name=None,object_id=None):
+    if object_id:
+        obj_id = object_id
+    else:
+        o=get_object_info(client, object_name=object_name)
+        obj_id = o.busObId
+    url = "{0}/api/V1/getbusinessobjectschema/busobid/{1}".format(client.host, obj_id)
+    headers = create_headers_dict(client.access_token)
+    response = requests.get(url, headers=headers)
+    if response.status_code == 200:
+        ro = response.json()
+        ro.pop("hasError")
+        ro.pop("errorCode")
+        ro.pop("errorMessage")
+        return ObjectSchema(**ro)
+    else:
+        raise ValueError("Unable to retrieve definitions")
 
 def get_object_details(client, object_name, field_list=None, **kwargs):
     bool_dict = {True: "true", False: "False"}
@@ -203,7 +250,7 @@ def get_object_details(client, object_name, field_list=None, **kwargs):
         "includeAll": bool_dict[include_all],
         "includeRequired": bool_dict[include_required]
     }
-
+    template.update(kwargs)
     url = "{0}/api/V1/getbusinessobjecttemplate".format(client.host)
     headers = create_headers_dict(access_token=client.access_token)
     response = requests.post(url, data=json.dumps(template), headers=headers)
@@ -293,10 +340,10 @@ def file_to_dataframe(file_path, file_type="excel"):
     else:
         raise FileNotFoundError("invalid file_path provided {}".format(file_path))
 
-def extract_data(file_name, delimiter=','):
+def extract_data(file_name, delimiter=',', encoding='utf-8-sig'):
     columns = None
     data = []
-    with open(file_name,encoding='utf-8-sig') as inf:
+    with open(file_name,encoding=encoding) as inf:
         csv_reader = csv.reader(inf, delimiter=delimiter)
         for row in csv_reader:
             if not columns:
@@ -309,14 +356,19 @@ def extract_data(file_name, delimiter=','):
 def create_data_dict(columns, rows):
     return [dict(zip(columns, row)) for row in rows]
 
+def update_object(client, object_schema, object_data_dict):
+    cs = create_save_requests(obj, object_data_dict)
 
-def update_object_from_file(client, file_name, object_name, delimiter=','):
+def update_object_from_file(client, file_name, object_name, delimiter=',',encoding='utf-8-sig'):
     columns, data = extract_data(file_name, delimiter=delimiter)
     obj = get_object_details(client, object_name, fields=columns)
     data_dict = [dict(zip(columns, row)) for row in data]
     cs = create_save_requests(obj, data_dict)
     response = save_objects(client, cs)
-    logger.debug(response.text)
+    # logger.debug(response.text)
+    for row in response.json()['responses']:
+        if row['hasError']:
+            logger.debug(row)
     return response
 
 
