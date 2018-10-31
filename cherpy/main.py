@@ -5,6 +5,7 @@ import requests
 import logging
 import pandas as pd
 import csv
+
 logger = logging.getLogger('main')
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
@@ -53,10 +54,12 @@ class Fields(object):
     def __attrs_post_init__(self):
         if self._fields:
             for d in self._fields:
-                setattr(self, d["name"].lower(),d)
+                setattr(self, d["name"].lower(), d)
+
 
 def init_fields(field_dict):
     return Fields(field_dict)
+
 
 @attr.s
 class ObjectSchema(object):
@@ -95,7 +98,7 @@ class ObjectSchema(object):
         return self.fields[field_name.lower().replace(' ', '')].copy()
 
     def get_fieldId(self, field_name):
-        field = getattr(self.fieldDefinitions,field_name.lower())
+        field = getattr(self.fieldDefinitions, field_name.lower())
         return field['fieldID']
 
     def create_field_list(self, field_names):
@@ -108,12 +111,6 @@ class ObjectSchema(object):
         fd = self.fieldDefinitions
         field_list = [getattr(fd, f.lower())["fieldId"] for f in field_names]
         return field_list
-
-def SaveRequest(object):
-    business_object_id = attr.ib()
-    business_object_public_id = attr.ib()
-    business_object_record_id = attr.ib()
-    fields = attr.ib(attr.Factory(list))
 
 
 def create_field_template(object_template, field_dict):
@@ -152,6 +149,7 @@ def create_user_request(object_template, data_dict, field_dict=None):
         data["userInfoFields"] = create_field_template(userinfo, field_dict)
     return data
 
+
 def create_save_request(object_schema, data_dict):
     logger.info("Creating save request for {}".format(object_schema))
     logger.debug(data_dict)
@@ -166,6 +164,7 @@ def create_save_request(object_schema, data_dict):
         field_template['dirty'] = "true"
         save_request['fields'].append(field_template)
     return save_request
+
 
 def create_save_requests(object_schema, data_dict):
     request_list = []
@@ -198,25 +197,48 @@ def create_delete_requests(object_schema, data_dict):
     return {"deleteRequests": request_list}
 
 
-def get_object_info(client, object_name):
-    url = "{0}/api/V1/getbusinessobjectsummary/busobname/{1}".format(client.host, object_name)
+class searchResponse(object):
+    def __init__(self, raw_response):
+        self.data = raw_response
+        self.busobid = raw_response['busObId']
+        self.busobpublicid = raw_response['busObPublicId']
+        self.busobrecid = raw_response['busObRecId']
+
+    def field_list(self):
+        return sorted(i['name'] for i in self.data['fields'])
+
+    def __getattr__(self, attribute):
+        for i in self.data['fields']:
+            if i['name'].lower() == attribute.lower():
+                return i['value']
+
+
+def get_object_info(client, object_name=None, object_id=None):
+    if all([object_name is None, object_id is None]):
+        raise ValueError("Must provide object_name or object_id")
+    param_field = "busobname" if object_name else "busobid"
+    param_value = object_name if object_name else object_id
+    url = "{0}/api/V1/getbusinessobjectsummary/{field}/{value}".format(client.host, field=param_field,
+                                                                       value=param_value)
     headers = create_headers_dict(client.access_token)
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
-
         response_dict = response.json()[0]
         obj_id = response_dict.pop('busObId')
         return ObjectSchema(busObId=obj_id, **response_dict)
     else:
         raise Exception(response)
 
-def get_object_schema(client, object_name=None,object_id=None):
+
+def get_object_schema(client, object_name=None, object_id=None, include_relationships=False):
     if object_id:
         obj_id = object_id
     else:
-        o=get_object_info(client, object_name=object_name)
+        o = get_object_info(client, object_name=object_name)
         obj_id = o.busObId
-    url = "{0}/api/V1/getbusinessobjectschema/busobid/{1}".format(client.host, obj_id)
+    include_relationships = "true" if include_relationships else "false"
+    url = "{0}/api/V1/getbusinessobjectschema/busobid/{1}?includerelationships={2}".format(client.host, obj_id,
+                                                                                           include_relationships)
     headers = create_headers_dict(client.access_token)
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
@@ -227,6 +249,7 @@ def get_object_schema(client, object_name=None,object_id=None):
         return ObjectSchema(**ro)
     else:
         raise ValueError("Unable to retrieve definitions")
+
 
 def get_object_details(client, object_name, field_list=None, **kwargs):
     bool_dict = {True: "true", False: "False"}
@@ -258,24 +281,20 @@ def get_object_details(client, object_name, field_list=None, **kwargs):
     return obj
 
 
-def query_object(client, object_id=None, object_name=None, search_string=None):
-    if object_name:
-        object_id = get_object_info(client, object_name).busObId
-    data = {
-        "busObIds": [
-            object_id
-        ],
-        "searchText": search_string
-    }
-    svc = ServiceRequest(client=client, service_method="getquicksearchresults")
-    return requests.post(svc.action_url, headers=svc.headers, data=json.dumps(data))
-
-
 def search_object(client, object_id=None, object_name=None, **kwargs):
-    bool_dict = {True: "true", False: "false"}
-
-    if object_name:
-        object_id = get_object_info(client, object_name).busObId
+    """
+    Should be used to search for objects
+    :param client:
+    :param object_id:
+    :param object_name:
+    :param kwargs:
+    :return:
+    """
+    schema = get_object_info(client, object_name, object_id)
+    if kwargs.get('fields'):
+        field_list = schema.create_field_list(kwargs.get('fields'))
+    else:
+        field_list = ""
     data = {
         "filters": [
             {
@@ -285,17 +304,17 @@ def search_object(client, object_id=None, object_name=None, **kwargs):
             }
         ],
         "association": "",
-        "busObId": object_id,
+        "busObId": schema.busObId,
         "customGridDefId": "",
         "dateTimeFormatting": "",
         "fieldId": "",
         "fields": [
-            ""
+            field_list
         ],
         "includeAllFields": "true",
         "includeSchema": "true",
         "pageNumber": 0,
-        "pageSize": 0,
+        "pageSize": kwargs.get('pageSize', 0),
         "scope": "",
         "scopeOwner": "",
         "searchId": "",
@@ -324,11 +343,6 @@ def save_objects(client, object_records):
     logger.debug(object_records)
     return requests.post(svc.action_url, headers=svc.headers, data=json.dumps(object_records))
 
-def save_object(client, object_records):
-    svc = ServiceRequest(client, service_method="savebusinessobject")
-    logger.debug(object_records)
-    return requests.post(svc.action_url, headers=svc.headers, data=json.dumps(object_records))
-
 
 def file_to_dataframe(file_path, file_type="excel"):
     if os.path.exists(file_path):
@@ -340,10 +354,11 @@ def file_to_dataframe(file_path, file_type="excel"):
     else:
         raise FileNotFoundError("invalid file_path provided {}".format(file_path))
 
+
 def extract_data(file_name, delimiter=',', encoding='utf-8-sig'):
     columns = None
     data = []
-    with open(file_name,encoding=encoding) as inf:
+    with open(file_name, encoding=encoding) as inf:
         csv_reader = csv.reader(inf, delimiter=delimiter)
         for row in csv_reader:
             if not columns:
@@ -356,10 +371,11 @@ def extract_data(file_name, delimiter=',', encoding='utf-8-sig'):
 def create_data_dict(columns, rows):
     return [dict(zip(columns, row)) for row in rows]
 
-def update_object(client, object_schema, object_data_dict):
-    cs = create_save_requests(obj, object_data_dict)
 
-def update_object_from_file(client, file_name, object_name, delimiter=',',encoding='utf-8-sig'):
+# def update_object(client, object_schema, object_data_dict):
+#     cs = create_save_requests(obj, object_data_dict)
+
+def update_object_from_file(client, file_name, object_name, delimiter=',', encoding='utf-8-sig'):
     columns, data = extract_data(file_name, delimiter=delimiter)
     obj = get_object_details(client, object_name, fields=columns)
     data_dict = [dict(zip(columns, row)) for row in data]
@@ -372,8 +388,31 @@ def update_object_from_file(client, file_name, object_name, delimiter=',',encodi
     return response
 
 
-if __name__ == '__main__':
-    import csv
+class CherwellObjectRecord(object):
+    def __init__(self, busobid, recid, busobpublicid=None):
+        self.busobid = busobid
+        self.recid = recid
+        self.busobpublicid = busobpublicid if busobpublicid else ""
 
-    c = config_from_file()
-    c.login()
+    def key_dict(self):
+        return {"busObId": self.busobid,
+                "busObPublicId": self.busobpublicid,
+                "busObRecId": self.recid}
+
+
+def delete_object(c, objects, stop_on_error=True):
+    responses = []
+    if isinstance(objects, list) and len(objects) > 1:
+        delete_requests = {"deleteRequests": [o.key_dict() for o in objects], "stopOnError": stop_on_error}
+        responses = c.post("api/V1/deletebusinessobjectbatch", data=delete_requests)
+    else:
+        for o in objects:
+            responses.append(c.delete(
+                "api/V1/deletebusinessobject/busobid/{objectid}/busobrecid/{recid}".format(objectid=o.busobid,
+                                                                                           recid=o.recid)))
+
+    return responses
+
+
+if __name__ == '__main__':
+    pass

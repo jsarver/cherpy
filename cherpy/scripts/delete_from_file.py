@@ -1,7 +1,7 @@
 from cherpy.api import config_from_file
-from cherpy.main import create_delete_requests, get_object_info, search_object,query_object,get_object_schema,extract_data
-c = config_from_file(env="PROD_CHERPY")
-# c = config_from_file(env="qa_chewey")
+from cherpy.main import create_delete_requests, get_object_info, search_object,extract_data
+# c = config_from_file(env="PROD_CHERPY")
+c = config_from_file(env="qa_chewey")
 c.login()
 
 
@@ -18,4 +18,4 @@ def delete_object_batch(c, object_name, pageSize=10000):
 obj = get_object_info(c,"ticketrouting")
 dl=[{'busObRecId': i[0],"busObId":obj.busObId,"busObPublicId":""} for i in d]
 dl_req={"deleteRequests": dl}
-r=c.post("api/V1/deletebusinessobjectbatch", data=dl_req)
+# r=c.post("api/V1/deletebusinessobjectbatch", data=dl_req)

@@ -1,0 +1,91 @@
+GET /api/{version}/getbusinessobject/busobid/{busobid}/busobrecid/{busobrecid} Get a Business Object record
+DELETE /api/{version}/removebusinessobjectattachment/attachmentid/{attachmentid}/busobname/{busobname}/publicid/{publicid} Remove an attachment by Business Object name and public ID
+DELETE /api/{version}/logout Log out user by token
+GET /api/{version}/getbusinessobjectattachments/busobname/{busobname}/publicid/{publicid}/type/{type}/attachmenttype/{attachmenttype} Get attachments by Business Object name and public ID
+GET /api/{version}/getgalleryimage/name/{name} Get built-in images
+GET /api/{version}/getrelatedbusinessobject/parentbusobid/{parentbusobid}/parentbusobrecid/{parentbusobrecid}/relationshipid/{relationshipid}/gridid/{gridid} Get related Business Objects custom grid
+GET /api/{version}/getteams Get all available Teams
+GET /api/{version}/getsearchitems/association/{association}/scope/{scope}/scopeowner/{scopeowner}/folder/{folder} Get all saved searches by Folder ID
+DELETE /api/{version}/removebusinessobjectattachment/attachmentid/{attachmentid}/busobid/{busobid}/publicid/{publicid} Remove an attachment by Business Object ID and public ID
+GET /api/{version}/getbusinessobjectsummary/busobname/{busobname} Get a Business Object summary by name
+POST /api/{version}/deletebusinessobjectbatch Delete Business Objects in a batch
+POST /api/{version}/uploadbusinessobjectattachment/filename/{filename}/busobid/{busobid}/publicid/{publicid}/offset/{offset}/totalsize/{totalsize} Upload an attachment by Business Object ID and public ID
+POST /api/{version}/saveuserbatch Create or update users in a batch
+GET /api/{version}/getbusinessobject/scancode/{scanCode}/busobname/{busobname} Get a Business Object by its scan code and Business Object name.
+GET /api/{version}/getmobileformforbusob/busobid/{busobid}/busobrecid/{busobrecid} Get mobile form by BusObId and BusObRecId
+PUT /api/{version}/savebusinessobjectattachmenturl Attach a URL path
+GET /api/{version}/serviceinfo Get information about the REST Api and CSM
+GET /api/{version}/getmobileformforbusob/busobname/{busobname}/publicid/{publicid} Get mobile form by BusObName and PublicId
+GET /api/{version}/getbusinessobjectsummary/busobid/{busobid} Get a Business Object summary by ID
+GET /api/{version}/getsearchresultsexport/association/{association}/scope/{scope}/scopeowner/{scopeowner}/searchname/{searchname}/exportformat/{exportformat} Export a saved search by name
+GET /api/{version}/getsearchitems/association/{association} Get all saved searches by Business Object association
+GET /api/{version}/getuserbypublicid/publicid/{publicid} Get a user by public ID
+DELETE /api/{version}/deleteuser/userrecordid/{userrecordid} Delete a user by record ID
+DELETE /api/{version}/deleterelatedbusinessobject/parentbusobid/{parentbusobid}/parentbusobrecid/{parentbusobrecid}/relationshipid/{relationshipid}/busobrecid/{busobrecid} Delete a related Business Object by record ID
+GET /api/{version}/getsecuritygroupbusinessobjectpermissionsforcurrentuserbybusobname/busobname/{busobname} Get Business Object permissions for current user
+POST /api/{version}/saveteam Create or update a team
+DELETE /api/{version}/removebusinessobjectattachment/attachmentid/{attachmentid}/busobname/{busobname}/busobrecid/{busobrecid} Remove an attachment by Business Object name and record ID
+GET /api/{version}/getsecuritygroups Get all available Security Groups
+GET /api/{version}/getbusinessobjectattachment/attachmentid/{attachmentid}/busobid/{busobid}/busobrecid/{busobrecid} Get an imported Business Object attachment
+GET /api/{version}/linkrelatedbusinessobject/parentbusobid/{parentbusobid}/parentbusobrecid/{parentbusobrecid}/relationshipid/{relationshipid}/busobid/{busobid}/busobrecid/{busobrecid} Link related Business Objects
+POST /api/{version}/getbusinessobjectattachments Get Business Object attachments by request object
+GET /api/{version}/getusersteams/userrecordid/{userRecordId} Get Team assignments for a user
+POST /api/{version}/getbusinessobjecttemplate Get Business Object templates for create
+DELETE /api/{version}/unlinkrelatedbusinessobject/parentbusobid/{parentbusobid}/parentbusobrecid/{parentbusobrecid}/relationshipid/{relationshipid}/busobid/{busobid}/busobrecid/{busobrecid} UnLink related Business Objects
+GET /api/{version}/getbusinessobjectattachments/busobname/{busobname}/busobrecid/{busobrecid}/type/{type}/attachmenttype/{attachmenttype} Get attachments by Business Object name and record ID
+GET /api/{version}/getroles Get all available Roles
+POST /api/{version}/getsearchresults Run an ad-hoc search
+POST /api/{version}/deleteuserbatch Delete a batch of users
+GET /api/{version}/getsecuritygrouprights/groupid/{groupid}/categoryid/{categoryid} Get permissions for a Security Group by category
+GET /api/{version}/getsecuritygrouprightsforcurrentuserbycategoryid/categoryid/{categoryid} Get current user's permissions by Security Group category by ID
+GET /api/{version}/getsearchitems/association/{association}/scope/{scope}/scopeowner/{scopeowner} Get all saved searches by scope owner (sub scope)
+POST /api/{version}/addusertoteambybatch Add users to a team by batch
+GET /api/{version}/getrelatedbusinessobject/parentbusobid/{parentbusobid}/parentbusobrecid/{parentbusobrecid}/relationshipid/{relationshipid} Get related Business Objects by ID
+DELETE /api/{version}/removebusinessobjectattachment/attachmentid/{attachmentid}/busobid/{busobid}/busobrecid/{busobrecid} Remove an attachment by Business Object ID and record ID
+POST /api/{version}/saveuser Create or update a user
+DELETE /api/{version}/deletebusinessobject/busobid/{busobid}/publicid/{publicid} Delete a Business Object by public ID
+POST /api/{version}/uploadbusinessobjectattachment/filename/{filename}/busobid/{busobid}/busobrecid/{busobrecid}/offset/{offset}/totalsize/{totalsize} Upload an attachment by Business Object ID and record ID
+POST /api/{version}/uploadbusinessobjectattachment/filename/{filename}/busobname/{busobname}/publicid/{publicid}/offset/{offset}/totalsize/{totalsize} Upload an attachment by Business Object name and public ID
+GET /api/{version}/getsearchitems Get all saved searches by default Business Object association
+GET /api/{version}/getbusinessobject/busobid/{busobid}/publicid/{publicid} Get a Business Object record
+GET /api/{version}/getmobileformforbusob/busobid/{busobid}/publicid/{publicid} Get mobile form by BusObId and PublicID
+POST /token Get an access token
+GET /api/{version}/getuserbyloginid/loginid/{loginid} Get a user by login ID
+GET /api/{version}/getbusinessobjectsummaries/type/{type} Get Business Object summaries by type
+POST /api/{version}/getrelatedbusinessobject Get related Business Objects using a request object
+GET /api/{version}/getsearchresults/association/{association}/scope/{scope}/scopeowner/{scopeowner}/searchid/{searchid} Run a saved search by internal ID
+POST /api/{version}/getuserbatch Get user information in a batch
+GET /api/{version}/getsecuritygrouprights/groupname/{groupname}/categoryname/{categoryname} Get permissions for a Security Group by category
+POST /api/{version}/getquicksearchresults Execute a Quick Search from a list of Business Object IDs and search text
+POST /api/{version}/addusertoteam Add a user to a team
+GET /api/{version}/getsecuritygroupbusinessobjectpermissions/groupname/{groupname}/busobname/{busobname} Get Business Object permissions by Security Group
+POST /api/{version}/uploadbusinessobjectattachment/filename/{filename}/busobname/{busobname}/busobrecid/{busobrecid}/offset/{offset}/totalsize/{totalsize} Upload an attachment by Business Object name and record ID
+PUT /api/{version}/savebusinessobjectattachmentlink Attach a file via UNC
+GET /api/{version}/getsecuritygroupbusinessobjectpermissions/groupid/{groupid}/busobid/{busObId} Get Business Object permissions by Security Group
+DELETE /api/{version}/deletebusinessobject/busobid/{busobid}/busobrecid/{busobrecid} Delete a Business Object by record ID
+GET /api/{version}/getuserbyloginid Get a user by login ID and login ID type
+POST /api/{version}/getquicksearchspecificresults Execute a Quick Search on a specific Business Object
+POST /api/{version}/getquicksearchconfigurationforbusobs Get a Quick Search from a list of Business Object IDs
+POST /api/{version}/savebusinessobject Create or Update a Business Object
+POST /api/{version}/saverelatedbusinessobject Create or update a related Business Object
+GET /api/{version}/getusersinsecuritygroup/groupid/{groupid} Get users in a Security Group
+GET /api/{version}/getsecuritygroupbusinessobjectpermissionsforcurrentuserbybusobid/busobid/{busObId} Get Business Object permission for current user
+DELETE /api/{version}/deleterelatedbusinessobject/parentbusobid/{parentbusobid}/parentbusobrecid/{parentbusobrecid}/relationshipid/{relationshipid}/publicid/{publicid} Delete a related Business Object by public ID
+POST /api/{version}/savebusinessobjectbatch Create or update a batch of Business Objects
+GET /api/{version}/getbusinessobjectattachments/busobid/{busobid}/publicid/{publicid}/type/{type}/attachmenttype/{attachmenttype} Get attachments by Business Object public ID
+POST /api/{version}/getbusinessobjectbatch Get a batch of Business Object records
+GET /api/{version}/getbusinessobject/scancode/{scanCode}/busobid/{busobid} Get a Business Object by its scan code and Business Object ID.
+GET /api/{version}/getsearchresults/association/{association}/scope/{scope}/scopeowner/{scopeowner}/searchname/{searchname} Run a saved search by name
+DELETE /api/{version}/removeuserfromteam/teamid/{teamId}/userrecordid/{userrecordid} Remove a user from a team
+GET /api/{version}/getworkgroups Get all available Workgroups
+POST /api/{version}/fieldvalueslookup Get lookup values for fields
+GET /api/{version}/getquicksearchconfigurationforbusobswithviewrights Get a Quick Search by Business Objects with view rights
+GET /api/{version}/getbusinessobjectattachments/busobid/{busobid}/busobrecid/{busobrecid}/type/{type}/attachmenttype/{attachmenttype} Get attachments by Business Object record ID
+POST /api/{version}/getsearchresultsexport Export an ad-hoc search
+GET /api/{version}/getsecuritygrouprightsforcurrentuserbycategoryname/categoryname/{categoryname} Get current user's permissions by Security Group category by name
+GET /api/{version}/getsearchitems/association/{association}/scope/{scope} Get all saved searches by scope
+GET /api/{version}/getsecuritygroupcategories Get all Security Group categories
+GET /api/{version}/getsearchresultsexport/association/{association}/scope/{scope}/scopeowner/{scopeowner}/searchid/{searchid}/exportformat/{exportformat} Export a saved search by ID
+GET /api/{version}/getbusinessobjectschema/busobid/{busobId} Get a Business Object schema
+PUT /api/{version}/savebusinessobjectattachmentbusob Attach a Business Object to a Business Object
+GET /api/{version}/getmobileformforbusob/busobname/{busobname}/busobrecid/{busobrecid} Get mobile form by BusObName and record ID.
