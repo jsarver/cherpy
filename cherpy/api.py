@@ -11,13 +11,14 @@ try:
 except ImportError:
     pass
 
-def config_from_file(file_name=None, env="CHEWEY_CONFIG"):
-    if not file_name and os.environ.get(env):
-        file_name = os.environ[env]
+
+
+def config_from_env(env="CHEWEY_CONFIG"):
+    file_name = os.environ[env]
     with open(file_name) as f:
         cfg = yaml.load(f)
-    _client=Client(user = cfg['user'], password= cfg['password'], host=cfg['host'], client_id=cfg['client_id'], grant_type=cfg['grant_type'], auth_mode=cfg['auth_mode'] )
-    return _client
+    return Client(**cfg)
+
 
 def create_config(filename="cherpy.yml", **kwargs):
 
@@ -104,15 +105,23 @@ class Client(object):
 
 
 def login(user, password, client_id, host, grant_type="password", auth_mode="Internal"):
+    """
+
+    :param user:
+    :param password:
+    :param client_id:
+    :param host:
+    :param grant_type:
+    :param auth_mode:
+    :return:
+    """
     data = "grant_type={grant_type}&client_id={client}&username={user}&password={password}"\
         .format(client=client_id, user=user,password=password, grant_type=grant_type)
     url = "{host}/token?auth_mode={auth_mode}".format(host=host, auth_mode=auth_mode)
     response = requests.post(url, data=data).json()
-    print(response)
-    # auth_header = {'Authorization': "Bearer {access}".format(access=response['access_token'])}
     token = response.get('access_token')
     return token
 
 if __name__ == '__main__':
-    c=config_from_file()
+    c=config_from_env()
 

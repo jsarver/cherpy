@@ -16,7 +16,7 @@ fh.setFormatter(formatter)
 # add the handlers to the logger
 logger.addHandler(fh)
 
-from cherpy.api import config_from_file, create_headers_dict
+from cherpy.api import config_from_env, create_headers_dict
 
 service_methods = {'getbusinessobjectsummary': {"url": "/api/V1/getbusinessobjectsummary/busobname"},
                    'getquicksearchresults': {"url": "/api/V1/getquicksearchresults"},
@@ -99,7 +99,9 @@ class ObjectSchema(object):
 
     def get_fieldId(self, field_name):
         field = getattr(self.fieldDefinitions, field_name.lower())
-        return field['fieldID']
+        return field['fieldId']
+
+
 
     def create_field_list(self, field_names):
         """
@@ -108,8 +110,7 @@ class ObjectSchema(object):
         :param field_names:
         :return:
         """
-        fd = self.fieldDefinitions
-        field_list = [getattr(fd, f.lower())["fieldId"] for f in field_names]
+        field_list = [self.get_fieldId(f).split('FI:')[1] for f in field_names]
         return field_list
 
 
@@ -290,11 +291,7 @@ def search_object(client, object_id=None, object_name=None, **kwargs):
     :param kwargs:
     :return:
     """
-    schema = get_object_info(client, object_name, object_id)
-    if kwargs.get('fields'):
-        field_list = schema.create_field_list(kwargs.get('fields'))
-    else:
-        field_list = ""
+    schema = get_object_schema(client, object_name, object_id)
     data = {
         "filters": [
             {
@@ -309,10 +306,10 @@ def search_object(client, object_id=None, object_name=None, **kwargs):
         "dateTimeFormatting": "",
         "fieldId": "",
         "fields": [
-            field_list
+            ""
         ],
-        "includeAllFields": "true",
-        "includeSchema": "true",
+        "includeAllFields": "",
+        "includeSchema": kwargs.get("includeSchema","false"),
         "pageNumber": 0,
         "pageSize": kwargs.get('pageSize', 0),
         "scope": "",
@@ -334,6 +331,14 @@ def search_object(client, object_id=None, object_name=None, **kwargs):
         ]
     }
     data.update(**kwargs)
+    if kwargs.get('fields'):
+        includeAllFields = "false"
+        field_list = schema.create_field_list(kwargs.get('fields'))
+    else:
+        field_list = ""
+        includeAllFields = "true"
+    data['fields'] = field_list
+    data['includeAllFields'] = includeAllFields
     svc = ServiceRequest(client=client, service_method="getsearchresults")
     return requests.post(svc.action_url, headers=svc.headers, data=json.dumps(data))
 

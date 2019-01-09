@@ -1,7 +1,7 @@
-from cherpy.api import config_from_file
+from cherpy.api import config_from_env
 from cherpy.main import create_delete_requests, get_object_info, search_object,extract_data
 # c = config_from_file(env="PROD_CHERPY")
-c = config_from_file(env="qa_chewey")
+c = config_from_env(env="qa_chewey")
 c.login()
 
 
