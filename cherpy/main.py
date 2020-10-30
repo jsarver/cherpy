@@ -1,22 +1,13 @@
-import json
-import attr
-import os
-import requests
-import logging
-import pandas as pd
 import csv
+import json
+import os
+import attr
+import requests
+from loguru import logger
+import sys
 
-logger = logging.getLogger('main')
-logger.setLevel(logging.DEBUG)
-# create file handler which logs even debug messages
-fh = logging.FileHandler('cherpy.log')
-fh.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-fh.setFormatter(formatter)
-# add the handlers to the logger
-logger.addHandler(fh)
-
-from cherpy.api import config_from_env, create_headers_dict
+logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
+from cherpy.api import create_headers_dict
 
 service_methods = {'getbusinessobjectsummary': {"url": "/api/V1/getbusinessobjectsummary/busobname"},
                    'getquicksearchresults': {"url": "/api/V1/getquicksearchresults"},
@@ -56,6 +47,10 @@ class Fields(object):
             for d in self._fields:
                 setattr(self, d["name"].lower(), d)
 
+    def __iter__(self):
+        for i in self._fields:
+            return i
+
 
 def init_fields(field_dict):
     return Fields(field_dict)
@@ -67,7 +62,7 @@ class ObjectSchema(object):
     name = attr.ib()
     displayName = attr.ib(default=None)
     firstRecIdField = attr.ib(default=None)
-    fieldDefinitions = attr.ib(default=None, convert=init_fields)
+    fieldDefinitions = attr.ib(default=None, converter=init_fields)
     gridDefinitions = attr.ib(default=None)
     group = attr.ib(default=None)
     groupSummaries = attr.ib(default=None)
@@ -100,8 +95,6 @@ class ObjectSchema(object):
     def get_fieldId(self, field_name):
         field = getattr(self.fieldDefinitions, field_name.lower())
         return field['fieldId']
-
-
 
     def create_field_list(self, field_names):
         """
@@ -244,6 +237,7 @@ def get_object_schema(client, object_name=None, object_id=None, include_relation
     response = requests.get(url, headers=headers)
     if response.status_code == 200:
         ro = response.json()
+
         ro.pop("hasError")
         ro.pop("errorCode")
         ro.pop("errorMessage")
@@ -309,7 +303,7 @@ def search_object(client, object_id=None, object_name=None, **kwargs):
             ""
         ],
         "includeAllFields": "",
-        "includeSchema": kwargs.get("includeSchema","false"),
+        "includeSchema": kwargs.get("includeSchema", "false"),
         "pageNumber": 0,
         "pageSize": kwargs.get('pageSize', 0),
         "scope": "",
@@ -350,6 +344,10 @@ def save_objects(client, object_records):
 
 
 def file_to_dataframe(file_path, file_type="excel"):
+    try:
+        import pands as pd
+    except Exception:
+        pass
     if os.path.exists(file_path):
         if file_type == "excel":
             df = pd.read_excel(file_path)
@@ -384,6 +382,7 @@ def update_object_from_file(client, file_name, object_name, delimiter=',', encod
     columns, data = extract_data(file_name, delimiter=delimiter)
     obj = get_object_details(client, object_name, fields=columns)
     data_dict = [dict(zip(columns, row)) for row in data]
+
     cs = create_save_requests(obj, data_dict)
     response = save_objects(client, cs)
     # logger.debug(response.text)
@@ -421,3 +420,29 @@ def delete_object(c, objects, stop_on_error=True):
 
 if __name__ == '__main__':
     pass
+
+{'saveRequests': [{'busObId': '6dd53665c0c24cab86870a21cf6434ae', 'fields': [
+    {'dirty': 'true', 'displayName': 'Short Description', 'fieldId': '93e8ea93ff67fd95118255419690a50ef2d56f910c',
+     'html': None, 'name': 'ShortDescription', 'value': 'my stuff'},
+    {'dirty': 'true', 'displayName': 'Description', 'fieldId': '252b836fc72c4149915053ca1131d138', 'html': None,
+     'name': 'Description', 'value': 'my description'},
+    {'dirty': 'true', 'displayName': 'Service', 'fieldId': '936725cd10c735d1dd8c5b4cd4969cb0bd833655f4', 'html': None,
+     'name': 'Service', 'value': 'Data services'},
+    {'dirty': 'true', 'displayName': 'Category', 'fieldId': '9e0b434034e94781ab29598150f388aa', 'html': None,
+     'name': 'Category', 'value': 'Interfaces'},
+    {'dirty': 'true', 'displayName': 'Subcategory', 'fieldId': '1163fda7e6a44f40bb94d2b47cc58f46', 'html': None,
+     'name': 'Subcategory', 'value': 'Add/new'},
+    {'dirty': 'true', 'displayName': 'Priority', 'fieldId': '83c36313e97b4e6b9028aff3b401b71c', 'html': None,
+     'name': 'Priority', 'value': '3'},
+    {'dirty': 'true', 'displayName': 'Requester ID', 'fieldId': '941c6ab46447d10eb713754fa89f473636cb21f5fd',
+     'html': None, 'name': 'RequesterID', 'value': '942e7de0ffb12634d1496c4e4fbbd7a50d081d9e30'},
+    {'dirty': 'true', 'displayName': 'Service Recipient ID', 'fieldId': '933bd530833c64efbf66f84114acabb3e90c6d7b8f',
+     'html': None, 'name': 'ServiceRecipientID', 'value': '942e7de0ffb12634d1496c4e4fbbd7a50d081d9e30'},
+    {'dirty': 'true', 'displayName': 'Owned By Team', 'fieldId': '9339fc404e8d5299b7a7c64de79ab81a1c1ff4306c',
+     'html': None, 'name': 'OwnedByTeam', 'value': 'Itsm Support'},
+    {'dirty': 'true', 'displayName': 'Call Source', 'fieldId': '93670bdf8abe2cd1f92b1f490a90c7b7d684222e13',
+     'html': None, 'name': 'Source', 'value': 'Phone'},
+    {'dirty': 'true', 'displayName': 'Impact', 'fieldId': 'ae05c132527e48bd95d063c445622df7', 'html': None,
+     'name': 'Impact', 'value': 'Minor/Localized'},
+    {'dirty': 'true', 'displayName': 'Urgency', 'fieldId': '29d741aae8bf461f8aafa3c9eb4dc822', 'html': None,
+     'name': 'Urgency', 'value': 'high'}]}]}

@@ -24,11 +24,16 @@ def check_expired(func):
     return refresh_wrapper
 
 
-def config_from_env(env="CHEWEY_CONFIG"):
-    file_name = os.environ[env]
+def config_from_file(file_name):
     with open(file_name) as f:
         cfg = yaml.load(f)
     return Client(**cfg)
+
+
+def config_from_env(env="CHEWEY_CONFIG"):
+    file_name = os.environ[env]
+    client = config_from_file(file_name)
+    return client
 
 
 def create_config(filename="cherpy.yml", **kwargs):
@@ -57,6 +62,19 @@ def refresh(client_id, host, refresh_token):
 
 @attr.s
 class Client:
+    """
+    param host:
+    param user
+    param password
+    param client_id
+    param grant_type
+    param auth_mode
+    param access_token
+    param expires_in
+    param expires
+    param issued
+    param refresh_token
+    """
     host = attr.ib()
     user = attr.ib()
     password = attr.ib()
@@ -75,7 +93,7 @@ class Client:
         if self.refresh_token and self.expired:
             print('expired, logging in')
             if self.refresh_token:
-                self._access_response = refresh(self.client_id, self.host,self.refresh_token)
+                self._access_response = refresh(self.client_id, self.host, self.refresh_token)
         else:
             self._access_response = login(self.user, self.password, self.client_id, self.host, self.grant_type,
                                           self.auth_mode)
@@ -147,8 +165,6 @@ class Client:
         return requests.delete("{}/{}".format(self.host, url), headers=headers)
 
 
-
-
 def login(user, password, client_id, host, grant_type="password", auth_mode="Internal"):
     """
     :param user:
@@ -167,10 +183,4 @@ def login(user, password, client_id, host, grant_type="password", auth_mode="Int
 
 
 if __name__ == '__main__':
-    c = config_from_env()
-    c.login()
-    print(c.expires)
-    c.expires = c.expires - datetime.timedelta(days=3)
-    c.login()
-    print(c.expires)
-    c.login()
+    pass
