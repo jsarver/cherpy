@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import filedialog
-
 import attr
 
 
@@ -8,8 +7,10 @@ def get_save_file_path():
     root = tk.Tk()
     root.withdraw()
 
-    file_path = filedialog.asksaveasfilename(defaultextension=".csv", filetypes=(("csv file", "*.csv"),("All Files", "*.*")))
+    file_path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                             filetypes=(("csv file", "*.csv"), ("All Files", "*.*")))
     return file_path
+
 
 def get_open_file_path():
     root = tk.Tk()
@@ -21,6 +22,7 @@ def get_open_file_path():
 
 @attr.s
 class NameValueExtractor(object):
+    """takes a response object and returns a data dict"""
     response = attr.ib()
 
     def create_dict(self):
