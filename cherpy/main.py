@@ -7,7 +7,7 @@ from loguru import logger
 import sys
 
 logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
-from cherpy.api import create_headers_dict
+from cherpy.auth import create_headers_dict
 
 service_methods = {'getbusinessobjectsummary': {"url": "/api/V1/getbusinessobjectsummary/busobname"},
                    'getquicksearchresults': {"url": "/api/V1/getquicksearchresults"},
