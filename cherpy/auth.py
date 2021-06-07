@@ -26,7 +26,7 @@ def check_expired(func):
 
 def config_from_file(file_name):
     with open(file_name) as f:
-        cfg = yaml.load(f)
+        cfg = yaml.safe_load(f)
     return Client(**cfg)
 
 
