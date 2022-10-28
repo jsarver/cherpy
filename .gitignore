@@ -1,3 +1,8 @@
 /cherpy.egg-info/
 /cherpy.log
 /dist/
+*/__pycache__/*
+build
+.idea
+.vscode
+__pycache__

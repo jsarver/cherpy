@@ -1,22 +1,29 @@
-Cherpy is a set of API convenience methods for interacting with Cherwells Rest API
+## Overview
 
-This tool allows you to do the following
+Cherpy is an API wrapper to provide an easy way use the rest api for the Cherwell platform
 
-Create and update objects
+This provides convenience for the following
 
-Search for objects
-
-Get schema information
+* Create and update objects
+* Search for objects
+* Get schema information
+* Delete objects
+* Call a onestep
 
 ## Usage:
 
-Creating an incident
+### Create client credentials from config
+
+```python
+
+from cherpy.auth import config_from_env
 
 # create client using env variable which contains the config file path
+client = config_from_env("cherwell_dev")
 
-from cherpy.auth import config_from_env c = config_from_env("cherwell_dev")
+## token created
+client.login()
 
-# token created
+```
 
-c.login()
 
