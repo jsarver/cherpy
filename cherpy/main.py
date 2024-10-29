@@ -1,12 +1,11 @@
 import csv
 import json
 import os
-import attr
 import requests
+import attr
 from loguru import logger
 import sys
 
-logger.add(sys.stderr, format="{time} {level} {message}", filter="my_module", level="INFO")
 from cherpy.auth import create_headers_dict
 
 service_methods = {'getbusinessobjectsummary': {"url": "/api/V1/getbusinessobjectsummary/busobname"},
@@ -115,34 +114,6 @@ def create_field_template(object_template, field_dict):
         field_template['dirty'] = "true"
         fields.append(field_template)
     return fields
-
-
-def create_user_request(object_template, data_dict, field_dict=None):
-    userinfo = object_template
-    data = {
-        # "accountLocked": "false",
-        # "busObId": "",
-        # "displayName": "",
-        # "ldapRequired": "false",
-        # "loginId": "",
-        # "nextPasswordResetDate": "null",
-        # "password": "P@ssw0rd",
-        # "passwordNeverExpires": "true",
-        # "securityGroupId": "",
-        # "userCannotChangePassword": "false",
-        # "userMustChangePasswordAtNextLogin": "true",
-        # "userInfoFields": [
-        # ],
-        # "windowsUserId": ""
-    }
-    data['busObId'] = userinfo.busObId
-    data['displayName'] = userinfo.displayName
-    data.update(data_dict)
-
-    if field_dict:
-        data["userInfoFields"] = create_field_template(userinfo, field_dict)
-    return data
-
 
 def create_save_request(object_schema, data_dict):
     logger.info("Creating save request for {}".format(object_schema))
@@ -420,29 +391,3 @@ def delete_object(c, objects, stop_on_error=True):
 
 if __name__ == '__main__':
     pass
-
-{'saveRequests': [{'busObId': '6dd53665c0c24cab86870a21cf6434ae', 'fields': [
-    {'dirty': 'true', 'displayName': 'Short Description', 'fieldId': '93e8ea93ff67fd95118255419690a50ef2d56f910c',
-     'html': None, 'name': 'ShortDescription', 'value': 'my stuff'},
-    {'dirty': 'true', 'displayName': 'Description', 'fieldId': '252b836fc72c4149915053ca1131d138', 'html': None,
-     'name': 'Description', 'value': 'my description'},
-    {'dirty': 'true', 'displayName': 'Service', 'fieldId': '936725cd10c735d1dd8c5b4cd4969cb0bd833655f4', 'html': None,
-     'name': 'Service', 'value': 'Data services'},
-    {'dirty': 'true', 'displayName': 'Category', 'fieldId': '9e0b434034e94781ab29598150f388aa', 'html': None,
-     'name': 'Category', 'value': 'Interfaces'},
-    {'dirty': 'true', 'displayName': 'Subcategory', 'fieldId': '1163fda7e6a44f40bb94d2b47cc58f46', 'html': None,
-     'name': 'Subcategory', 'value': 'Add/new'},
-    {'dirty': 'true', 'displayName': 'Priority', 'fieldId': '83c36313e97b4e6b9028aff3b401b71c', 'html': None,
-     'name': 'Priority', 'value': '3'},
-    {'dirty': 'true', 'displayName': 'Requester ID', 'fieldId': '941c6ab46447d10eb713754fa89f473636cb21f5fd',
-     'html': None, 'name': 'RequesterID', 'value': '942e7de0ffb12634d1496c4e4fbbd7a50d081d9e30'},
-    {'dirty': 'true', 'displayName': 'Service Recipient ID', 'fieldId': '933bd530833c64efbf66f84114acabb3e90c6d7b8f',
-     'html': None, 'name': 'ServiceRecipientID', 'value': '942e7de0ffb12634d1496c4e4fbbd7a50d081d9e30'},
-    {'dirty': 'true', 'displayName': 'Owned By Team', 'fieldId': '9339fc404e8d5299b7a7c64de79ab81a1c1ff4306c',
-     'html': None, 'name': 'OwnedByTeam', 'value': 'Itsm Support'},
-    {'dirty': 'true', 'displayName': 'Call Source', 'fieldId': '93670bdf8abe2cd1f92b1f490a90c7b7d684222e13',
-     'html': None, 'name': 'Source', 'value': 'Phone'},
-    {'dirty': 'true', 'displayName': 'Impact', 'fieldId': 'ae05c132527e48bd95d063c445622df7', 'html': None,
-     'name': 'Impact', 'value': 'Minor/Localized'},
-    {'dirty': 'true', 'displayName': 'Urgency', 'fieldId': '29d741aae8bf461f8aafa3c9eb4dc822', 'html': None,
-     'name': 'Urgency', 'value': 'high'}]}]}
