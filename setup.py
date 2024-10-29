@@ -1,9 +1,9 @@
-from distutils.core import setup
+from setuptools import setup
 from setuptools import find_packages
 
 setup(
     name='cherpy',
-    version='0.5.1',
+    version='0.5.2',
     packages=find_packages(),
     url='',
     license='',
@@ -13,8 +13,9 @@ setup(
     install_requires=["""attrs
                         chardet
                         PyYAML
-                        requests
+                        requests == 2.32.0
                         loguru
                         """
                       ],
+    python_requires='>=3.9',
 )
