@@ -1,4 +1,13 @@
 import pytest
+from cherpy.auth import config_from_env
+from cherpy.main import search_object
+
+c = config_from_env("chewey_config")
+c.login()
+
+# confirm that object query works
+results = search_object(c, object_name="incident", pageSize=2).json()
+print(len(results['businessObjects']) > 0)
 
 template_response = {'errorCode': None,
  'errorMessage': None,
