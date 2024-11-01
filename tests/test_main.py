@@ -6,19 +6,8 @@ c = config_from_env("cherpy_dev")
 c.login()
 
 # confirm that object query works
-results = search_object(c, object_name="incident", pageSize=2).json()
-print(len(results['businessObjects']) > 0)
-
-template_response = {'errorCode': None,
- 'errorMessage': None,
- 'fields': [{'dirty': False,
-   'displayName': 'Product Name',
-   'fieldId': '94249974836712921f87e743d990e80a9dc739a041',
-   'name': 'ProductName',
-   'value': ''},
-  {'dirty': False,
-   'displayName': 'Owned By Team',
-   'fieldId': '9343f8800b9723457d7de946c8bf85a77532ab9e0d',
-   'name': 'OwnedByTeam',
-   'value': ''}],
- 'hasError': False}
+@pytest.fixture()
+def test_search_object():
+    response = search_object(c, object_name="Incident",
+                             pageSize=10)
+    assert response.status_code == 200
