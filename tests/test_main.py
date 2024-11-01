@@ -2,7 +2,7 @@ import pytest
 from cherpy.auth import config_from_env
 from cherpy.main import search_object
 
-c = config_from_env("chewey_config")
+c = config_from_env("cherpy_dev")
 c.login()
 
 # confirm that object query works
