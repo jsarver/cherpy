@@ -12,7 +12,7 @@ This provides convenience for the following
 * Delete objects
 * Call a onestep
 
-## Usage:
+## Library usage:
 
 ### Create client credentials from config
 
@@ -27,10 +27,22 @@ client = config_from_env("cherwell_dev")
 ## token created
 client.login()
 
-# search for object using the id or the object name
+# search for any incident object object name, limit to 10 (0 for all)
+search_object(client, object_name="Incident", pageSize=10)
+
+# search for any incident containg the word desktop and rerning the fields IncidentID and ownedbyteam 
 search_object(client, object_name="Incident", fields=["IncdientID", "ownedbyteam"], search_string="desktop",
               pageSize=10)
 
 ```
 
+### Windows Command Line Usage:
 
+```shell
+#search for incident object and return the fields IncidentID and ownedbyteam
+csm search -o Incident -env cherpy_dev -f IncidentID,ownedbyteam -s desktop -p 10 --output-file incident.csv
+
+# search for incident object and return the fields IncidentID and ownedbyteam
+csm search -o Incident -env cherpy_dev -f IncidentID,ownedbyteam -s desktop -p 10 --output-file incident.csv incidentid ownedbyteam
+
+``` 
