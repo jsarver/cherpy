@@ -21,3 +21,11 @@ pytest = "^8.3.3"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+search = "cherpy.cli:search_object_cli"
+delete_objects = "cherpy.cli:delete_objects_cli"
+update = "cherpy.cli:update_object_cli"
+create = "cherpy.cli:create_object"
+run-onestep = "cherpy.cli:run_onestep_cli"
+csm = "cherpy.cli:csm"
