@@ -37,7 +37,6 @@ def caplog(caplog: LogCaptureFixture):
 
 
 def test_get_onestep(cfg, token):
-    association = "discovereddevices"
     object_summary = get_object_summary(cfg, association, token)
     bus_ob_id = object_summary.get('busObId')
     onestep = get_onestep(cfg, association=bus_ob_id, onestep_name=name, scope=scope, token=token)
@@ -49,7 +48,7 @@ def test_get_onestep(cfg, token):
     ("discovereddevices", True),
     ("bad name", False),
 ])
-def test_get_object_summary(cfg, association, token, expected):
+def test_get_object_summary(cfg, token, expected):
     if expected:
         onestep = get_object_summary(cfg, association, token)
         assert onestep.get('busObId')
