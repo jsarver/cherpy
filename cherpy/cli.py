@@ -1,5 +1,4 @@
 import json
-import subprocess
 import click
 from cherpy import config_from_env, get_object_schema, update_object_from_file
 from cherpy.auth import config_from_file
@@ -14,33 +13,49 @@ def csm():
     pass
 
 
-@csm.command('run-onestep')
-@click.option('--env', default="CHEWEY_CONFIG", prompt="Please provide Environment to get config file")
-@click.option('--association', default=None)
+def env_option():
+    return click.option('--env', default="cherpy_config",
+                        prompt="Enter environment variable containing config file path",
+                        help="Environment variable that contains the path to the config file")
+
+
+def browse_for_file():
+    return click.option('--ask-file', is_flag=True, help="Browse for file path")
+
+
+@click.command('run-onestep')
+@env_option()
+@click.option('--association', default=None, help="The association or object-name to run the onestep on")
 @click.option('--onestep-name', default=None)
 @click.option('--scope', default="Global")
-@click.option('--scope-owner', default=None)
-def run_onestep_cli(env, association, onestep_name, scope, scope_owner):
+def run_onestep_cli(env, association, onestep_name, scope):
     """
-    Command-line interface to run a Cherwell onestep action.
+    Call a one step in Cherwell
     """
     logger.info(f'Current Env: {env}')
     cfg = config_from_env(env=env)
-    if scope_owner is None:
-        scope_owner = association
-    response = run_onestep(cfg, association=association, onestep_name=onestep_name, scope=scope,
-                           scope_owner=scope_owner,
-                           prompts=None)
+
+    response = run_onestep(cfg, association=association, onestep_name=onestep_name, scope=scope, token=cfg.access_token)
     print(json.dumps(response, indent=2))
 
 
 @click.command('get-schema')
-@click.option('--env', default="CHEWEY_CONFIG", prompt="Please provide Environment to get config file")
-@click.option('--object_name', default=None)
-@click.option('--object_id', default=None)
-@click.option('--output_file', default=None)
+@env_option()
+@click.option('--object-name', default=None)
+@click.option('--object-id', default=None)
+@click.option('--output-file', default=None)
 @click.argument('fields', nargs=-1)
 def get_schema_cli(object_name, output_file=None, env=None, fields=None, object_id=None, **kwargs):
+    """
+    Returns Schema information for a Cherwell object to the console or a file
+    :param object_name:
+    :param output_file:
+    :param env:
+    :param fields:
+    :param object_id:
+    :param kwargs:
+    :return:
+    """
     logger.info(f'Current Env: {env}')
     client = config_from_env(env=env)
 
@@ -52,7 +67,7 @@ def get_schema_cli(object_name, output_file=None, env=None, fields=None, object_
         object_name = click.prompt("Please type an object name")
     o = get_object_schema(client, object_name, obj_id)
 
-    fd = o.fieldDefinitions
+    # fd = o.fieldDefinitions
 
     if not output_file:
         # output_file = get_save_file_path()
@@ -65,10 +80,11 @@ def get_schema_cli(object_name, output_file=None, env=None, fields=None, object_
 
 
 @click.command('delete')
-@click.option('--env', prompt="Env variable that contains config file path")
+@env_option()
 @click.option('--object-name', prompt="provide cherwell object")
-@click.option('--chunk-size', prompt="Number of records to delete at a time")
-def delete_objects_cli(object_name, env, chunk_size=300):
+@click.option('--chunk-size', prompt="Number of records to delete at a time",
+              help='Number of records to delete in each batch')
+def delete_object_cli(object_name, env, chunk_size=300):
     client = config_from_env(env=env)
     client.login()
     del_obj_info = get_object_info(client, object_name)
@@ -90,26 +106,19 @@ def delete_objects_cli(object_name, env, chunk_size=300):
             click.echo("{} objects deleted".format(total_del))
         except Exception as e:
             row_count = 0
-            click.echo("expection {}".format(e))
+            click.echo("exception {}".format(e))
     return
 
 
-@click.command('publish')
-@click.option('--connection', prompt="Cherwell connection file")
-@click.option('--blueprint', prompt="blueprint Path ")
-def publish_blueprint(connection, blueprint):
-    subprocess.Popen('')
-
-
 @click.command('update')
-@click.option('--env', prompt="Please provide Environment to get config file")
-@click.option('--object-name', prompt="provide cherwell object")
-@click.option('--input-file-path', default=None)
+@env_option()
+@click.option('--object-name', prompt="provide cherwell object", help='Object name for the record you are updating')
+@click.option('--input-file-path', default=None, help='File path of the input data for the object you are updating')
 def update_object_cli(object_name, input_file_path=None, env=None):
     """
+    Update only! if matching record not found it will not create a new record. Input file must contain a RecId field
         :param env: Environmental variable storing location of configuration file
         :param object_name: Name of the Cherwell object
-        :param ask_file: pass this flag if you want to be prompted for filename
         :param input_file_path: file name of data for object you want to create
         :return:
     """
@@ -131,31 +140,34 @@ def update_object_cli(object_name, input_file_path=None, env=None):
 
 # TODO add docstrings to all the commands
 # TODO cleanup the readme file with some good examples
-# TODO add a login decorator for all the commands that require login
+
 @click.command('create')
-@click.option('--object-name', prompt="provide cherwell object")
-@click.option('--env', default=None)
-@click.option('--cfg-file', default=None)
-@click.option('--input-file', default=None)
-@click.option('--ask-file', is_flag=True)
+@click.option('--object-name', prompt="Provide cherwell object name",
+              help='Object name for the record you are creating')
+@env_option()
+@click.option('--cfg-file', default=None, help='Full path to the configuration file')
+@click.option('--input-file', default=None, help='Full path to the file containing new record data')
+@click.option('--ask-file', is_flag=True, help='This flag will open a file dialog to browse for the input file')
 @click.argument('object-data', nargs=-1)
 def create_object(object_name, ask_file, input_file=None, env=None, cfg_file=None, object_data=None):
     """
+    Create a new Cherwell record from an input file or key value pairs
 
-    :param cfg_file:
-    :param object_name: name of the Cherwell object
-    :param ask_file: pass this flag if you want to be prompted for filename
-    :param input_file: filename of data for object you want to create
+    :param object_name: Name of the Cherwell object
     :param env: Environmental variable storing location of configuration file
-    :param object_data: key value pairs for creating object
+    :param cfg_file: full path to the configuration file
+    :param ask_file: This flag will open a file dialog to browse for the input file
+    :param input_file: path to file with data for object you want to create
+    :param object_data: key value pairs for creating object if you don't want to use an input file
     :return:
+
     """
     if env:
         client = config_from_env(env=env)
     elif cfg_file:
         client = config_from_file(cfg_file)
     else:
-        click.BadParameter("stuff")
+        click.BadParameter("You must provide cfg path (--cfg_path) or environment variable containing it (--cfg_var)")
         click.echo("You must provide cfg path (--cfg_path) or environment variable containing it (--cfg_var)")
         return
 
@@ -183,12 +195,12 @@ def create_object(object_name, ask_file, input_file=None, env=None, cfg_file=Non
 
 
 @click.command('search')
-@click.option('--object-name', default=None)
-@click.option('--env', default="CHEWEY_CONFIG", prompt="Please provide Environment to get config file")
-@click.option('--output-file', default=None)
-@click.option('--search-text', 'searchText', default="")
-@click.option('--page-size', 'pageSize', default=20000)
-@click.option('--page-number', 'pageNumber', default=0)
+@click.option('--object-name', default=None, help='Name of the Cherwell object to search')
+@env_option()
+@click.option('--output-file', default=None, help='File path to save the search results')
+@click.option('--search-text', 'searchText', default="", help='Free text search')
+@click.option('--page-size', 'pageSize', default=20000, help='Number of records per page')
+@click.option('--page-number', 'pageNumber', default=0, help='Page number to retrieve')
 @click.argument('fields', nargs=-1)
 def search_object_cli(object_name, output_file=None, env=None, fields="", **kwargs):
     if not object_name:
@@ -209,9 +221,8 @@ def search_object_cli(object_name, output_file=None, env=None, fields="", **kwar
 
 csm.add_command(get_schema_cli)
 csm.add_command(create_object)
-csm.add_command(delete_objects_cli)
+csm.add_command(delete_object_cli)
 csm.add_command(search_object_cli)
-csm.add_command(get_schema_cli)
 csm.add_command(run_onestep_cli)
 
 if __name__ == '__main__':
