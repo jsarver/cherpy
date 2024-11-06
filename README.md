@@ -35,7 +35,7 @@ client = config_from_env("cherwell_dev")
 ## token created
 client.login()
 
-# search for any incident object object name, limit to 10 (0 for all)
+# search for any incident object name, limit to 10 (0 for all)
 search_object(client, object_name="Incident", pageSize=10)
 
 # search for any incident containg the word desktop and rerning the fields IncidentID and ownedbyteam 
