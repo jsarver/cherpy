@@ -10,5 +10,5 @@ def test_search_object_cli():
                            ['--env', 'cherpy_dev', '--object-name', 'Incident', '--page-size', '10', '--output-file',
                             'test.csv'])
     assert result.exit_code == 0
-    with open('test.csv', 'r') as f:
+    with open('../cherpy/test.csv', 'r') as f:
         assert f.read() != ""
