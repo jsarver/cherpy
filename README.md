@@ -12,6 +12,14 @@ This provides convenience for the following
 * Delete objects
 * Call a onestep
 
+## Installation:
+
+To install Cherpy, use:
+
+```bash
+pip install cherpy
+```
+
 ## Library usage:
 
 ### Create client credentials from config
