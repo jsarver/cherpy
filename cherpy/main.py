@@ -4,7 +4,6 @@ import os
 import requests
 import attr
 from loguru import logger
-import sys
 
 from cherpy.auth import create_headers_dict
 
@@ -133,14 +132,12 @@ def create_save_request(object_schema, data_dict):
 
 def create_save_requests(object_schema, data_dict):
     request_list = []
-    logger.info("Creating save request for {}".format(object_schema))
+    logger.info(f"Creating save request for {object_schema.name}")
     for d in data_dict:
-        save_request = {}
-        save_request['busObId'] = object_schema.busObId
-        recid = d.get('RecID')
-        if recid:
+        save_request = {'busObId': object_schema.busObId, 'fields': []}
+        if d.get('RecID'):
             save_request['busObRecId'] = d.pop('RecID')
-        save_request['fields'] = []
+
         for f in d:
             field_template = object_schema.get_field_info_by_name(f)
             field_template['value'] = d[f]
@@ -308,9 +305,18 @@ def search_object(client, object_id=None, object_name=None, **kwargs):
     return requests.post(svc.action_url, headers=svc.headers, data=json.dumps(data))
 
 
+def summarize_save_request(save_request, records=3):
+    summary_str = f"Sample of first {records} save requests (of {len(save_request['saveRequests'])}):\n"
+    for record in save_request['saveRequests'][:records]:
+        summary_str += f"BusobId: {record['busObId']}\nFields:\n"
+        for field in record['fields']:
+            summary_str += f"    {field['name']}: {field['value']}\n"
+    return summary_str
+
 def save_objects(client, object_records):
     svc = ServiceRequest(client, service_method="savebusinessobjectbatch")
-    logger.debug(object_records)
+    logger.debug(f"Saving {len(object_records['saveRequests'])} records")
+    logger.debug(summarize_save_request(object_records))
     return requests.post(svc.action_url, headers=svc.headers, data=json.dumps(object_records))
 
 
