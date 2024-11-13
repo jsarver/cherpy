@@ -8,19 +8,27 @@ from cherpy.runonestep import run_onestep
 from loguru import logger
 
 
-@click.group()
-def csm():
-    pass
-
-
 def env_option():
+    """
+    This option will allow the user to specify the environment variable that contains the path to the config file
+    :return:
+    """
     return click.option('--env', default="cherpy_config",
                         prompt="Enter environment variable containing config file path",
                         help="Environment variable that contains the path to the config file")
 
 
-def browse_for_file():
+def browse_file_option():
+    """
+    This option will allow the user to browse for a file path
+    :return:
+    """
     return click.option('--ask-file', is_flag=True, help="Browse for file path")
+
+
+@click.group()
+def csm():
+    pass
 
 
 @click.command('run-onestep')
