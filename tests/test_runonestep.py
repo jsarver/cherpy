@@ -48,7 +48,7 @@ def test_get_onestep(cfg, token):
     ("discovereddevices", True),
     ("bad name", False),
 ])
-def test_get_object_summary(cfg, token, expected):
+def test_get_object_summary(cfg, token, association, expected):
     if expected:
         onestep = get_object_summary(cfg, association, token)
         assert onestep.get('busObId')
