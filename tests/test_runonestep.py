@@ -5,22 +5,14 @@ from loguru import logger
 from cherpy import config_from_env
 from cherpy.runonestep import get_onestep, run_onestep, get_object_summary
 
-client = config_from_env("cherpy_dev")
-client.login()
-
 name = "Call Reconcile HPDM Devices"
 association = "discovereddevices"
 scope = "Global"
 
 
 @pytest.fixture
-def cfg():
-    return client.__dict__
-
-
-@pytest.fixture
-def token():
-    return client.access_token
+def client():
+    return config_from_env("cherpy_dev")
 
 
 @pytest.fixture
@@ -36,23 +28,21 @@ def caplog(caplog: LogCaptureFixture):
     logger.remove(handler_id)
 
 
-def test_get_onestep(cfg, token):
-    object_summary = get_object_summary(cfg, association, token)
-    bus_ob_id = object_summary.get('busObId')
-    onestep = get_onestep(cfg, association=bus_ob_id, onestep_name=name, scope=scope)
+def test_get_onestep(client):
+    onestep = get_onestep(client, association=association, onestep_name=name, scope=scope)
 
-    assert onestep.get('name') and onestep.get('name') == name
+    assert onestep.get('name') and onestep.get('name').lower() == name.lower()
 
 
-@pytest.mark.parametrize("association, expected", [
-    ("discovereddevices", True),
-    ("bad name", False),
-])
-def test_get_object_summary(cfg, token, association, expected):
+@pytest.mark.parametrize("association, expected",
+                         [("discovereddevices", True),
+                          ("bad name", False),
+                          ])
+def test_get_object_summary(client, association, expected):
     if expected:
-        onestep = get_object_summary(cfg, association, token)
+        onestep = get_object_summary(client, association)
         assert onestep.get('busObId')
     else:
         with pytest.raises(SystemExit) as execinfo:
-            get_object_summary(cfg, association, token)
+            get_object_summary(client, association)
         assert execinfo.type == SystemExit
