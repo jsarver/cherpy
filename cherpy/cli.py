@@ -4,7 +4,7 @@ from cherpy import config_from_env, get_object_schema, update_object_from_file
 from cherpy.auth import config_from_file
 from cherpy.main import get_object_info, search_object, create_delete_requests
 from cherpy.utils import get_save_file_path, NameValueExtractor, get_open_file_path, dict_to_csv, create_temp_file
-from cherpy.runonestep import run_onestep
+from cherpy.runonestep import run_onestep, get_onestep
 from loguru import logger
 
 
@@ -31,6 +31,23 @@ def csm():
     pass
 
 
+@click.command('get-onestep')
+@click.option('--association', prompt="Provide cherwell association/object name",
+              help="Object name for the onestep you're searching for")
+@env_option()
+@click.option('--onestep-name', default=None, help='Name of the onestep')
+@click.option('--scope', default="Global", help='Scope of the onestep')
+def get_onestep_cli(env, association, onestep_name, scope):
+    """
+    Searches for and returns the standing key for a one step in Cherwell
+    """
+    logger.info(f'Current Env: {env}')
+    logger.info(f'Searching for {onestep_name} in {scope} for Association: {association}')
+    client = config_from_env(env=env)
+    standin_key = get_onestep(client=client, association=association, onestep_name=onestep_name, scope=scope)
+    click.echo(standin_key)
+
+
 @click.command('run-onestep')
 @env_option()
 @click.option('--association', default=None, help="The association or object-name to run the onestep on")
@@ -41,9 +58,8 @@ def run_onestep_cli(env, association, onestep_name, scope):
     Call a one step in Cherwell
     """
     logger.info(f'Current Env: {env}')
-    cfg = config_from_env(env=env)
-
-    response = run_onestep(cfg, association=association, onestep_name=onestep_name, scope=scope, token=cfg.access_token)
+    client = config_from_env(env=env)
+    response = run_onestep(client, association=association, onestep_name=onestep_name, scope=scope)
     print(json.dumps(response, indent=2))
 
 
@@ -232,6 +248,7 @@ csm.add_command(create_object)
 csm.add_command(delete_object_cli)
 csm.add_command(search_object_cli)
 csm.add_command(run_onestep_cli)
+csm.add_command(get_onestep_cli)
 
 if __name__ == '__main__':
     csm()
