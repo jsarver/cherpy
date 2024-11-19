@@ -77,7 +77,7 @@ class Client:
     """
     host = attr.ib()
     user = attr.ib()
-    password = attr.ib()
+    password = attr.ib(repr=False)
     client_id = attr.ib()
     grant_type = attr.ib(default="password")
     auth_mode = attr.ib(default="internal")
@@ -88,6 +88,14 @@ class Client:
     refresh_token = attr.ib(default=None)
     refresh_automatically = attr.ib(default=True)
     token_type = attr.ib(default=None)
+
+    def __str__(self):
+        return (
+            f"Client(host={self.host}, user={self.user}, password=***, client_id={self.client_id}, "
+            f"grant_type={self.grant_type}, auth_mode={self.auth_mode}, access_token={self.access_token}, "
+            f"expires_in={self.expires_in}, expires={self.expires}, issued={self.issued}, "
+            f"refresh_token={self.refresh_token}, refresh_automatically={self.refresh_automatically}, token_type={self.token_type})"
+        )
 
     def login(self):
         if self.refresh_token and self.expired:
@@ -122,6 +130,8 @@ class Client:
 
     @property
     def headers(self):
+        if not self.access_token:
+            self.login()
         return create_headers_dict(self.access_token)
 
     def get_user_batch(self, data):
