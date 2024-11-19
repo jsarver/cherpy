@@ -39,7 +39,7 @@ def caplog(caplog: LogCaptureFixture):
 def test_get_onestep(cfg, token):
     object_summary = get_object_summary(cfg, association, token)
     bus_ob_id = object_summary.get('busObId')
-    onestep = get_onestep(cfg, association=bus_ob_id, onestep_name=name, scope=scope, token=token)
+    onestep = get_onestep(cfg, association=bus_ob_id, onestep_name=name, scope=scope)
 
     assert onestep.get('name') and onestep.get('name') == name
 

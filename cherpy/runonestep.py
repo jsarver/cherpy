@@ -22,14 +22,11 @@ def recurse(node, search, found_node=None):
     return found_node
 
 
-def get_onestep(cfg, association, scope, onestep_name, token):
-    base_url = cfg['host']
+def get_onestep(client, association, scope, onestep_name):
+    base_url = client.host
     url = f"{base_url}/api/V1/getonestepactions/association/{association}/scope/{scope}/scopeowner/{association}"
-    headers = {
-        "Accept": "application/json",
-        "Authorization": f"Bearer {token}"
-    }
-    response = requests.get(url, headers=headers)
+
+    response = requests.get(url, headers=client.headers)
     if response.status_code != 200:
         logger.error(f"Get onestep failed: {response.text}")
         sys.exit(1)
@@ -44,15 +41,12 @@ def get_onestep(cfg, association, scope, onestep_name, token):
         sys.exit(1)
 
 
-def get_object_summary(cfg, object_name, token):
-    base_url = cfg['host']
+def get_object_summary(client, object_name):
+    base_url = client.host
     url = f"{base_url}/api/V1/getbusinessobjectsummary/busobname/{object_name}"
-    headers = {
-        "Accept": "application/json",
-        "Authorization": f"Bearer {token}"
-    }
+
     logger.info(f"Getting object summary for {object_name}")
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=client.headers)
     if response.status_code != 200:
         logger.error(f"Get object summary failed: {response.text}")
         sys.exit(1)
@@ -68,20 +62,16 @@ def get_object_summary(cfg, object_name, token):
         sys.exit(1)
 
 
-def run_onestep(cfg, association, onestep_name, scope, token):
-    object_summary = get_object_summary(cfg, association, token)
+def run_onestep(client, association, onestep_name, scope):
+    object_summary = get_object_summary(client, association)
     bus_ob_id = object_summary.get('busObId')
-    onestep = get_onestep(cfg, bus_ob_id, scope, onestep_name, token)
+    onestep = get_onestep(client, bus_ob_id, scope, onestep_name)
     standin_key = onestep.get('StandInKey', '').replace(':', '%3A').replace('#', '%23')
-    base_url = cfg['host']
+    base_url = client.host
     url = f"{base_url}/api/V1/runonestepaction/standinkey/{standin_key}"
-    headers = {
-        "Accept": "application/json",
-        "Authorization": f"Bearer {token}"
-    }
     logger.info(f"Attempting to run the onestep {onestep_name} at endpoint: {url}")
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=client.headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         logger.error(f"Attempt to run onestep {onestep_name} failed: {e}")
