@@ -8,22 +8,54 @@ from cherpy.runonestep import run_onestep, get_onestep
 from loguru import logger
 
 
-def env_option():
+def object_option(option_help="Cherwell object name"):
+    """
+    This option will allow the user to specify the Cherwell object name
+    :return:
+    """
+    return click.option('--object-name', default=None, help=option_help)
+
+
+def env_option(option_help="Environment variable that contains the path to the config file"):
     """
     This option will allow the user to specify the environment variable that contains the path to the config file
     :return:
     """
-    return click.option('--env', default="cherpy_config",
+    return click.option('-e', '--env', default="cherpy_config",
                         prompt="Enter environment variable containing config file path",
-                        help="Environment variable that contains the path to the config file")
+                        help=option_help)
 
 
-def browse_file_option():
+def input_option(option_help="Path to the input file"):
+    """
+    This option will allow the user to specify the path to the input file
+    :return:
+    """
+    return click.option('-i', '--input-path', default=None, help=option_help)
+
+
+def output_option(option_help="Path to the output file"):
+    """
+    This option will allow the user to specify the path to the output file
+    :return:
+    """
+    return click.option('-o', '--output-path', default=None, help=option_help)
+
+
+def browse_file_option(option_help="Browse for file path"):
     """
     This option will allow the user to browse for a file path
     :return:
     """
-    return click.option('--ask-file', is_flag=True, help="Browse for file path")
+    return click.option('-a', '--ask-file', is_flag=True, help=option_help)
+
+
+def field_argument():
+    """
+    This argument will allow the user to specify the fields to return
+    :return:
+    """
+    return click.argument('fields', nargs=-1)
 
 
 @click.group()
@@ -32,11 +64,10 @@ def csm():
 
 
 @click.command('get-onestep')
-@click.option('--association', prompt="Provide cherwell association/object name",
-              help="Object name for the onestep you're searching for")
 @env_option()
-@click.option('--onestep-name', default=None, help='Name of the onestep')
-@click.option('--scope', default="Global", help='Scope of the onestep')
+@object_option()
+@click.option('-on', '--onestep-name', default=None, help='Name of the onestep')
+@click.option('-sc', '--scope', default="Global", help='Scope of the onestep')
 def get_onestep_cli(env, association, onestep_name, scope):
     """
     Searches for and returns the standing key for a one step in Cherwell
@@ -50,9 +81,9 @@ def get_onestep_cli(env, association, onestep_name, scope):
 
 @click.command('run-onestep')
 @env_option()
-@click.option('--association', default=None, help="The association or object-name to run the onestep on")
-@click.option('--onestep-name', default=None)
-@click.option('--scope', default="Global")
+@object_option()
+@click.option('-on', '--onestep-name', default=None, help='Name of the onestep')
+@click.option('-sc', '--scope', default="Global", help='Scope of the onestep')
 def run_onestep_cli(env, association, onestep_name, scope):
     """
     Call a one step in Cherwell
@@ -65,11 +96,10 @@ def run_onestep_cli(env, association, onestep_name, scope):
 
 @click.command('get-schema')
 @env_option()
-@click.option('--object-name', default=None)
-@click.option('--object-id', default=None)
-@click.option('--output-path', default=None)
-@click.argument('fields', nargs=-1)
-def get_schema_cli(object_name, output_path=None, env=None, fields=None, object_id=None, **kwargs):
+@object_option()
+@output_option()
+@field_argument()
+def get_schema_cli(object_name, output_path=None, env=None):
     """
     Returns Schema information for a Cherwell object to the console or a file
     :param object_name:
@@ -83,13 +113,9 @@ def get_schema_cli(object_name, output_path=None, env=None, fields=None, object_
     logger.info(f'Current Env: {env}')
     client = config_from_env(env=env)
 
-    client.login()
-    obj_id = None
-    if object_id:
-        obj_id = object_id
-    elif not object_name:
+    if not object_name:
         object_name = click.prompt("Please type an object name")
-    o = get_object_schema(client, object_name, obj_id)
+    o = get_object_schema(client, object_name)
 
     # fd = o.fieldDefinitions
 
@@ -105,7 +131,7 @@ def get_schema_cli(object_name, output_path=None, env=None, fields=None, object_
 
 @click.command('delete')
 @env_option()
-@click.option('--object-name', prompt="provide cherwell object")
+@object_option()
 @click.option('--chunk-size', prompt="Number of records to delete at a time",
               help='Number of records to delete in each batch')
 def delete_object_cli(object_name, env, chunk_size=300):
@@ -136,16 +162,20 @@ def delete_object_cli(object_name, env, chunk_size=300):
 
 @click.command('update')
 @env_option()
-@click.option('--object-name', prompt="provide cherwell object", help='Object name for the record you are updating')
-@click.option('--input-path', default=None, help='File path of the input data for the object you are updating')
-def update_object_cli(object_name, input_path=None, env=None):
+@object_option()
+@input_option()
+@browse_file_option()
+def update_object_cli(object_name, input_path=None, env=None, ask_file=False):
     """
     Update only! if matching record not found it will not create a new record. Input file must contain a RecId field
+        :param ask_file: This flag will open a file dialog to browse for the input file
         :param env: Environmental variable storing location of configuration file
         :param object_name: Name of the Cherwell object
         :param input_path: file name of data for object you want to create
         :return:
     """
+    if ask_file:
+        input_path = get_open_file_path()
     client = config_from_env(env=env)
     client.login()
     if not input_path:
@@ -161,13 +191,13 @@ def update_object_cli(object_name, input_path=None, env=None):
             logger.debug("{}:{}".format(r, str(count)))
     return response
 
+
 @click.command('create')
-@click.option('--object-name', prompt="Provide cherwell object name",
-              help='Object name for the record you are creating')
 @env_option()
+@object_option(option_help='Object name for the record you are creating')
 @click.option('--config-path', default=None, help='Full path to the configuration file')
-@click.option('--input-path', default=None, help='Full path to the file containing new record data')
-@click.option('--ask-file', is_flag=True, help='This flag will open a file dialog to browse for the input file')
+@input_option(option_help='Full path to the file containing new record data')
+@browse_file_option(option_help='This flag will open a file dialog to browse for the input file')
 @click.argument('object-data', nargs=-1)
 def create_object_cli(object_name, ask_file, input_path=None, env=None, config_path=None, object_data=None):
     """
@@ -215,13 +245,13 @@ def create_object_cli(object_name, ask_file, input_path=None, env=None, config_p
 
 
 @click.command('search')
-@click.option('--object-name', default=None, help='Name of the Cherwell object to search')
 @env_option()
-@click.option('--output-path', default=None, help='File path to save the search results')
-@click.option('--search-text', 'searchText', default="", help='Free text search')
-@click.option('--page-size', 'pageSize', default=20000, help='Number of records per page')
-@click.option('--page-number', 'pageNumber', default=0, help='Page number to retrieve')
-@click.argument('fields', nargs=-1)
+@object_option(option_help='Name of the Cherwell object to search')
+@output_option(option_help='File path to save the search results')
+@click.option('-s', '--search-text', 'searchText', default="", help='Free text search')
+@click.option('-ps', '--page-size', 'pageSize', default=20000, help='Number of records per page')
+@click.option('-pg', '--page-number', 'pageNumber', default=0, help='Page number to retrieve')
+@field_argument()
 def search_object_cli(object_name, output_path=None, env=None, fields="", **kwargs):
     if not object_name:
         object_name = click.prompt("Please type an object name")
