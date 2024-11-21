@@ -32,25 +32,133 @@ from cherpy.main import search_object
 # create client using env variable which contains the config file path
 client = config_from_env("cherwell_dev")
 
-## token created
-client.login()
-
 # search for any incident object name, limit to 10 (0 for all)
 search_object(client, object_name="Incident", pageSize=10)
 
-# search for any incident containg the word desktop and rerning the fields IncidentID and ownedbyteam 
-search_object(client, object_name="Incident", fields=["IncdientID", "ownedbyteam"], search_string="desktop",
+# search for any incident containing the text desktop and returning the fields IncidentID and ownedbyteam 
+search_object(client, object_name="Incident", fields=["IncidentID", "ownedbyteam"], search_string="desktop",
               pageSize=10)
 
 ```
 
 ### Windows Command Line Usage:
 
-```shell
-#search for incident object and return the fields IncidentID and ownedbyteam
-csm search -o Incident -env cherpy_dev -f IncidentID,ownedbyteam -s desktop -p 10 --output-file incident.csv
+# Cherpy CLI Usage Guide
 
-# search for incident object and return the fields IncidentID and ownedbyteam
-csm search -o Incident -env cherpy_dev -f IncidentID,ownedbyteam -s desktop -p 10 --output-file incident.csv incidentid ownedbyteam
+Cherpy is a command-line tool for interacting with the Cherwell API. Here's how to use each command:
 
-``` 
+## Common Options
+
+All commands support these common options:
+
+- `-e, --env`: Environment variable containing config path (default: "cherpy_config")
+- `--object-name`: Name of the Cherwell object
+
+## Commands
+
+### Search
+
+Search for Cherwell objects.
+
+```bash
+# Basic search returning specific fields
+csm search --env cherwell_dev --object-name Incident FirstName LastName Status
+
+# Search with text filter and pagination
+csm search --env cherwell_dev --object-name Incident -s "printer issue" -ps 100 -pg 1
+
+# Search and save status and description for all incidents to a file
+csm search --object-name Incident -o output.csv Status Description
+```
+
+### Create
+
+Create new Cherwell records.
+
+```bash
+# Create from input file
+csm create --env cherwell_config --object-name Incident -input-path data.csv
+
+# Create with file dialog
+csm create --env cherwell_config --object-name Incident -ask-file
+
+# Create with direct key-value pairs
+csm create --env cherwell_config --object-name Incident Description="New Issue" Status="New"
+```
+
+### Update
+
+Update existing Cherwell records (requires RecId field in input data).
+
+```bash
+# Update from file
+csm update --object-name Incident --input-path updates.csv
+
+# Update using file dialog
+csm update --object-name Incident -a
+```
+
+### Delete
+
+Delete Cherwell records in batches.
+
+```bash
+# Delete with default chunk size (300)
+csm delete --object-name Incident
+
+# Delete with custom chunk size
+csm delete --object-name Incident --chunk-size 500
+```
+
+### Get Schema
+
+Retrieve schema information for Cherwell objects.
+
+```bash
+# Get schema and display in console
+csm get-schema --object-name Incident
+
+# Save schema to file
+csm get-schema --object-name Incident -o schema.txt
+```
+
+### OneStep Operations
+
+#### Get OneStep
+
+Get information about a OneStep automation.
+
+```bash
+# Get OneStep info
+csm get-onestep --object-name Incident -on "ProcessIncident" -sc "Global"
+```
+
+#### Run OneStep
+
+Execute a OneStep automation.
+
+```bash
+# Run OneStep
+csm run-onestep --object-name Incident -on "ProcessIncident" -sc "Global"
+```
+
+## Example Workflow
+
+```bash
+# 1. Check object schema
+csm get-schema --object-name Incident -o incident_schema.txt
+
+# 2. Search for existing incidents
+csm search --object-name Incident -s "printer" Status Description Owner
+
+# 3. Create new incidents
+csm create --object-name Incident --input-path new_incidents.csv
+
+# 4. Update incidents
+csm update --object-name Incident --input-path incident_updates.csv
+
+# 5. Run a OneStep process
+csm run-onestep --object-name Incident -on "ProcessIncident"
+```
+
+Note: All commands will prompt for the environment variable and object name if not specified
