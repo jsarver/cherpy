@@ -5,8 +5,8 @@ from loguru import logger
 from cherpy import config_from_env
 from cherpy.runonestep import get_onestep, run_onestep, get_object_summary
 
-name = "Call Reconcile HPDM Devices"
-association = "discovereddevices"
+name = "Call Delete Duplicate Servers"
+association = "configserver"
 scope = "Global"
 
 

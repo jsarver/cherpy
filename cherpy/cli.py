@@ -68,14 +68,14 @@ def csm():
 @object_option()
 @click.option('-on', '--onestep-name', default=None, help='Name of the onestep')
 @click.option('-sc', '--scope', default="Global", help='Scope of the onestep')
-def get_onestep_cli(env, association, onestep_name, scope):
+def get_onestep_cli(env, object_name, onestep_name, scope):
     """
     Searches for and returns the standing key for a one step in Cherwell
     """
     logger.info(f'Current Env: {env}')
-    logger.info(f'Searching for {onestep_name} in {scope} for Association: {association}')
+    logger.info(f'Searching for {onestep_name} in {scope} for Association: {object_name}')
     client = config_from_env(env=env)
-    standin_key = get_onestep(client=client, association=association, onestep_name=onestep_name, scope=scope)
+    standin_key = get_onestep(client=client, association=object_name, onestep_name=onestep_name, scope=scope)
     click.echo(standin_key)
 
 
@@ -84,13 +84,13 @@ def get_onestep_cli(env, association, onestep_name, scope):
 @object_option()
 @click.option('-on', '--onestep-name', default=None, help='Name of the onestep')
 @click.option('-sc', '--scope', default="Global", help='Scope of the onestep')
-def run_onestep_cli(env, association, onestep_name, scope):
+def run_onestep_cli(env, object_name, onestep_name, scope):
     """
     Call a one step in Cherwell
     """
     logger.info(f'Current Env: {env}')
     client = config_from_env(env=env)
-    response = run_onestep(client, association=association, onestep_name=onestep_name, scope=scope)
+    response = run_onestep(client, association=object_name, onestep_name=onestep_name, scope=scope)
     print(json.dumps(response, indent=2))
 
 
