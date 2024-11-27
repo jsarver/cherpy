@@ -1,7 +1,6 @@
 import pytest
 from _pytest.logging import LogCaptureFixture
 from loguru import logger
-
 from cherpy import config_from_env
 from cherpy.runonestep import get_onestep, run_onestep, get_object_summary
 
@@ -32,6 +31,12 @@ def test_get_onestep(client):
     onestep = get_onestep(client, association=association, onestep_name=name, scope=scope)
 
     assert onestep.get('name') and onestep.get('name').lower() == name.lower()
+
+
+def test_run_onestep(client):
+    response = run_onestep(client, association=association, onestep_name=name, scope=scope)
+
+    assert response.get('completed')
 
 
 @pytest.mark.parametrize("association, expected",

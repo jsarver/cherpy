@@ -92,7 +92,7 @@ def run_onestep(client, association, onestep_name, scope):
     :return:
     """
     onestep = get_onestep(client, association, scope, onestep_name)
-    standin_key = onestep.get('StandInKey', '').replace(':', '%3A').replace('#', '%23')
+    standin_key = onestep.get('standInKey', '').replace(':', '%3A').replace('#', '%23')
     url = f"{client.host}/api/V1/runonestepaction/standinkey/{standin_key}"
     logger.debug(f"Attempting to run the onestep {onestep_name} at endpoint: {url}")
     try:
