@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cherpy"
-version = "0.6.1"
+version = "0.6.2"
 description = "A rest api wrapper for the Cherwell Service management platform"
 authors = ["Josh Sarver <josh.sarver@gmail.com>"]
 license = "GNU GPLv3"
