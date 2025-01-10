@@ -356,7 +356,7 @@ def create_data_dict(columns, rows):
 #     cs = create_save_requests(obj, object_data_dict)
 
 def update_object_from_file(client, file_name, object_name, delimiter=',', encoding='utf-8-sig'):
-    columns, data = extract_data(file_name, delimiter=delimiter)
+    columns, data = extract_data(file_name, delimiter=delimiter, encoding=encoding)
     obj = get_object_details(client, object_name, fields=columns)
     data_dict = [dict(zip(columns, row)) for row in data]
 
