@@ -177,10 +177,16 @@ def update_object_cli(object_name, input_path=None, env=None, ask_file=False):
     if ask_file:
         input_path = get_open_file_path()
     client = config_from_env(env=env)
-    client.login()
+
     if not input_path:
         input_path = get_open_file_path()
     click.echo(input_path)
+
+    # check for RecId field in the file
+    with open(input_path, 'r') as f:
+        first_line = f.readline()
+        if "RecId" not in first_line:
+            raise ValueError("RecId column not found in file and required for update command")
     responses, errors = update_object_from_file(client=client, file_name=input_path, object_name=object_name,
                                                 delimiter=",",
                                                 encoding='utf-8-sig')
@@ -218,7 +224,6 @@ def create_object_cli(object_name, ask_file, input_path=None, env=None, config_p
         click.echo("You must provide cfg path (--cfg_path) or environment variable containing it (--cfg_var)")
         return
 
-    client.login()
     # if no file is provided but ask_file is passed then it prompts for file, if neither is provided
     # assumes that object data is provided, otherwise there is an error
     if not input_path:
@@ -231,14 +236,12 @@ def create_object_cli(object_name, ask_file, input_path=None, env=None, config_p
             raise ValueError("no file or object data provided")
 
     # click.echo(input_file)
-    response = update_object_from_file(client=client, file_name=input_path, object_name=object_name, delimiter=",",
-                                       encoding='utf-8-sig')
-    count = 0
-    for r in response.json()['responses']:
-        count += 1
-        if r['hasError']:
-            logger.debug("{}:{}".format(r, str(count)))
-    return response
+    responses, errors = update_object_from_file(client=client, file_name=input_path, object_name=object_name,
+                                                delimiter=",",
+                                                encoding='utf-8-sig')
+    for error in errors:
+        click.echo(error)
+    return f"Created {len(responses)} records"
 
 
 @click.command('search')
@@ -278,6 +281,7 @@ def search_object_cli(object_name, output_path=None, env=None, fields="", **kwar
 
 csm.add_command(get_schema_cli)
 csm.add_command(create_object_cli)
+csm.add_command(update_object_cli)
 csm.add_command(delete_object_cli)
 csm.add_command(search_object_cli)
 csm.add_command(run_onestep_cli)
