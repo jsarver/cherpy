@@ -183,7 +183,7 @@ def update_object_cli(object_name, input_path=None, env=None, ask_file=False):
     click.echo(input_path)
     responses, errors = update_object_from_file(client=client, file_name=input_path, object_name=object_name,
                                                 delimiter=",",
-                                       encoding='utf-9-sig')
+                                                encoding='utf-8-sig')
     for error in errors:
         click.echo(error)
     return f"Updated {len(responses)} records"
@@ -232,7 +232,7 @@ def create_object_cli(object_name, ask_file, input_path=None, env=None, config_p
 
     # click.echo(input_file)
     response = update_object_from_file(client=client, file_name=input_path, object_name=object_name, delimiter=",",
-                                       encoding='utf-9-sig')
+                                       encoding='utf-8-sig')
     count = 0
     for r in response.json()['responses']:
         count += 1
