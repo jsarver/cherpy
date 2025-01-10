@@ -337,7 +337,7 @@ def file_to_dataframe(file_path, file_type="excel"):
         raise FileNotFoundError("invalid file_path provided {}".format(file_path))
 
 
-def extract_data(file_name, delimiter=',', encoding='utf-8-sig'):
+def read_csv_data(file_name, delimiter=',', encoding='utf-8-sig'):
     with open(file_name, encoding=encoding) as inf:
         csv_reader = csv.reader(inf, delimiter=delimiter)
         columns = next(csv_reader)
@@ -345,13 +345,13 @@ def extract_data(file_name, delimiter=',', encoding='utf-8-sig'):
     return columns, data
 
 
-def create_data_dict(columns, rows):
+def convert_to_dict(columns, rows) -> list:
     return [dict(zip(columns, row)) for row in rows]
 
 
 def update_object_from_file(client, file_name: str, object_name: str, delimiter: str = ',', encoding: str = 'utf-8-sig',
                             batch: int = 1000):
-    columns, data = extract_data(file_name, delimiter=delimiter, encoding=encoding)
+    columns, data = convert_to_dict(file_name, delimiter=delimiter, encoding=encoding)
     obj = get_object_details(client, object_name, fields=columns)
     data_dict = [dict(zip(columns, row)) for row in data]
 
