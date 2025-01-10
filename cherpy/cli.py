@@ -181,15 +181,12 @@ def update_object_cli(object_name, input_path=None, env=None, ask_file=False):
     if not input_path:
         input_path = get_open_file_path()
     click.echo(input_path)
-    response = update_object_from_file(client=client, file_name=input_path, object_name=object_name, delimiter=",",
+    responses, errors = update_object_from_file(client=client, file_name=input_path, object_name=object_name,
+                                                delimiter=",",
                                        encoding='utf-9-sig')
-    count = 0
-    for r in response.json()['responses']:
-        count += 1
-        if r['hasError']:
-            click.echo("{}:{}".format(r, str(count)))
-            logger.debug("{}:{}".format(r, str(count)))
-    return response
+    for error in errors:
+        click.echo(error)
+    return f"Updated {len(responses)} records"
 
 
 @click.command('create')

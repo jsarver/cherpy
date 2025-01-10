@@ -351,17 +351,20 @@ def convert_to_dict(columns, rows) -> list:
 
 def update_object_from_file(client, file_name: str, object_name: str, delimiter: str = ',', encoding: str = 'utf-8-sig',
                             batch: int = 1000):
-    columns, data = convert_to_dict(file_name, delimiter=delimiter, encoding=encoding)
-    obj = get_object_details(client, object_name, fields=columns)
-    data_dict = [dict(zip(columns, row)) for row in data]
-
-    cs = create_save_requests(obj, data_dict)
-    response = save_objects(client, cs)
-    # logger.debug(response.text)
-    for row in response.json()['responses']:
-        if row['hasError']:
-            logger.debug(row)
-    return response
+    columns, data = read_csv_data(file_name, delimiter=delimiter, encoding=encoding)
+    object_schema = get_object_details(client, object_name, fields=columns)
+    responses = []
+    errors = []
+    for row_num in range(0, len(data), batch):
+        data_dict = convert_to_dict(columns, data[row_num:row_num + batch])
+        save_requests = create_save_requests(object_schema, data_dict)
+        response = save_objects(client, save_requests)
+        for row in response.json()['responses']:
+            if row['hasError']:
+                logger.debug(row)
+                errors.append(f"{batch}:{row}")
+        responses.append(response)
+    return responses, errors
 
 
 class CherwellObjectRecord(object):
