@@ -114,6 +114,7 @@ def create_field_template(object_template, field_dict):
         fields.append(field_template)
     return fields
 
+
 def create_save_request(object_schema, data_dict):
     logger.info("Creating save request for {}".format(object_schema))
     logger.debug(data_dict)
@@ -313,6 +314,7 @@ def summarize_save_request(save_request, records=3):
             summary_str += f"    {field['name']}: {field['value']}\n"
     return summary_str
 
+
 def save_objects(client, object_records):
     svc = ServiceRequest(client, service_method="savebusinessobjectbatch")
     logger.debug(f"Saving {len(object_records['saveRequests'])} records")
@@ -336,15 +338,10 @@ def file_to_dataframe(file_path, file_type="excel"):
 
 
 def extract_data(file_name, delimiter=',', encoding='utf-8-sig'):
-    columns = None
-    data = []
     with open(file_name, encoding=encoding) as inf:
         csv_reader = csv.reader(inf, delimiter=delimiter)
-        for row in csv_reader:
-            if not columns:
-                columns = row
-            else:
-                data.append(row)
+        columns = next(csv_reader)
+        data = [row for row in csv_reader]
     return columns, data
 
 
@@ -352,10 +349,8 @@ def create_data_dict(columns, rows):
     return [dict(zip(columns, row)) for row in rows]
 
 
-# def update_object(client, object_schema, object_data_dict):
-#     cs = create_save_requests(obj, object_data_dict)
-
-def update_object_from_file(client, file_name, object_name, delimiter=',', encoding='utf-8-sig'):
+def update_object_from_file(client, file_name: str, object_name: str, delimiter: str = ',', encoding: str = 'utf-8-sig',
+                            batch: int = 1000):
     columns, data = extract_data(file_name, delimiter=delimiter, encoding=encoding)
     obj = get_object_details(client, object_name, fields=columns)
     data_dict = [dict(zip(columns, row)) for row in data]
