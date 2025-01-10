@@ -253,6 +253,16 @@ def create_object_cli(object_name, ask_file, input_path=None, env=None, config_p
 @click.option('-pg', '--page-number', 'pageNumber', default=0, help='Page number to retrieve')
 @field_argument()
 def search_object_cli(object_name, output_path=None, env=None, fields="", **kwargs):
+    """
+    Search for records in Cherwell and save the results to a file
+
+    :param object_name:
+    :param output_path:
+    :param env:
+    :param fields:
+    :param kwargs:
+    :return:
+    """
     if not object_name:
         object_name = click.prompt("Please type an object name")
         if not object_name:
