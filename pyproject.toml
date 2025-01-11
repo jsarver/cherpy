@@ -18,7 +18,7 @@ dependencies = [
     "click<9.0.0,>=8.1.7",
 ]
 name = "cherpy"
-version = "0.6.2"
+version = "0.7.0"
 description = "A rest api wrapper for the Cherwell Service management platform"
 readme = "README.md"
 
