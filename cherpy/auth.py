@@ -116,13 +116,11 @@ class Client:
             self.refresh_token = self._access_response.get('refresh_token')
 
     def get_security_groups(self):
-        h = create_headers_dict(self.access_token)
-        response = requests.get("{}/api/V2/getsecuritygroups".format(self.host), headers=h)
+        response = requests.get("{}/api/V2/getsecuritygroups".format(self.host), headers=self.headers)
         return response
 
     def save_user_batch(self, data, version="v1"):
-        headers = create_headers_dict(self.access_token)
-        return requests.post("{}/{}".format(self.host, "api/v1/saveuserbatch"), headers=headers, data=data)
+        return requests.post("{}/{}".format(self.host, "api/v1/saveuserbatch"), headers=self.headers, data=data)
 
     @property
     def expired(self):
@@ -143,13 +141,11 @@ class Client:
         }
         user_list = [{"loginId": d, "publicId": ""} for d in data]
         template['readRequests'] = user_list
-        headers = create_headers_dict(self.access_token)
-        return requests.post("{}/{}".format(self.host, "api/v1/getuserbatch"), headers=headers,
+        return requests.post("{}/{}".format(self.host, "api/v1/getuserbatch"), headers=self.headers,
                              data=json.dumps(template))
 
     def get_teams(self):
-        headers = create_headers_dict(self.access_token)
-        return self.get("api/v1/getteams", headers=headers)
+        return self.get("api/v1/getteams", headers=self.headers)
 
     def add_user_to_team_by_batch(self, user_dict_list, stop_on_error="false"):
         template = {"addUserToTeamRequests": user_dict_list, "stopOnError": stop_on_error}

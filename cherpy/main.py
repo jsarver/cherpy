@@ -27,7 +27,7 @@ class ServiceRequest(object):
 
     @property
     def headers(self):
-        return create_headers_dict(self.client.access_token)
+        return self.client.headers
 
     def lookup_service_url(self, name):
         s = service_methods.get(name)
@@ -183,8 +183,7 @@ def get_object_info(client, object_name=None, object_id=None):
     param_value = object_name if object_name else object_id
     url = "{0}/api/V1/getbusinessobjectsummary/{field}/{value}".format(client.host, field=param_field,
                                                                        value=param_value)
-    headers = create_headers_dict(client.access_token)
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=client.headers)
     if response.status_code == 200:
         response_dict = response.json()[0]
         obj_id = response_dict.pop('busObId')
@@ -202,8 +201,7 @@ def get_object_schema(client, object_name=None, object_id=None, include_relation
     include_relationships = "true" if include_relationships else "false"
     url = "{0}/api/V1/getbusinessobjectschema/busobid/{1}?includerelationships={2}".format(client.host, obj_id,
                                                                                            include_relationships)
-    headers = create_headers_dict(client.access_token)
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=client.headers)
     if response.status_code == 200:
         ro = response.json()
 
@@ -239,8 +237,7 @@ def get_object_details(client, object_name, field_list=None, **kwargs):
     }
     template.update(kwargs)
     url = "{0}/api/V1/getbusinessobjecttemplate".format(client.host)
-    headers = create_headers_dict(access_token=client.access_token)
-    response = requests.post(url, data=json.dumps(template), headers=headers)
+    response = requests.post(url, data=json.dumps(template), headers=client.headers)
     obj.add_field_template(response.json())
     return obj
 
