@@ -185,9 +185,9 @@ def update_object_cli(object_name, input_path=None, env=None, ask_file=False):
     # check for RecId field in the file
     with open(input_path, 'r') as f:
         first_line = f.readline()
-        if "RecID" not in first_line:
+        if "recid" not in first_line.lower():
             raise ValueError(
-                "RecID column not found in file:it is case sensitive and required when using the update command")
+                "RecID column not found in file. It is required when using the update command")
     responses, errors = update_object_from_file(client=client, file_name=input_path, object_name=object_name,
                                                 delimiter=",",
                                                 encoding='utf-8-sig')

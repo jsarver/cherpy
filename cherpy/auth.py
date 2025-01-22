@@ -184,8 +184,11 @@ def login(user, password, client_id, host, grant_type="password", auth_mode="Int
     data = "grant_type={grant_type}&client_id={client}&username={user}&password={password}" \
         .format(client=client_id, user=user, password=password, grant_type=grant_type)
     url = "{host}/token?auth_mode={auth_mode}".format(host=host, auth_mode=auth_mode)
-    response = requests.post(url, data=data).json()
-    return response
+
+    response = requests.post(url, data=data)
+    if response.status_code != 200:
+        raise ValueError("Login Failed with status code: {} Reason: {}".format(response.status_code, response.reason))
+    return response.json()
 
 
 if __name__ == '__main__':
