@@ -136,8 +136,9 @@ def create_save_requests(object_schema, data_dict):
     logger.info(f"Creating save request for {object_schema.name}")
     for d in data_dict:
         save_request = {'busObId': object_schema.busObId, 'fields': []}
-        if d.get('RecID'):
-            save_request['busObRecId'] = d.pop('RecID')
+        # get recid value regardless of key case
+        if d.get('recid'):
+            save_request['busObRecId'] = d.pop('recid')
 
         for f in d:
             field_template = object_schema.get_field_info_by_name(f)
@@ -349,6 +350,7 @@ def convert_to_dict(columns, rows) -> list:
 def update_object_from_file(client, file_name: str, object_name: str, delimiter: str = ',', encoding: str = 'utf-8-sig',
                             batch: int = 1000):
     columns, data = read_csv_data(file_name, delimiter=delimiter, encoding=encoding)
+    columns = [c.lower() for c in columns]
     object_schema = get_object_details(client, object_name, fields=columns)
     responses = []
     errors = []
