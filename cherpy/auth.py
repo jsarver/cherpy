@@ -4,6 +4,7 @@ import yaml
 import os
 import datetime
 from functools import wraps
+from loguru import logger
 
 DEFAULT_CONFIG = {}
 
@@ -99,7 +100,7 @@ class Client:
 
     def login(self):
         if self.refresh_token and self.expired:
-            print('expired, logging in')
+            logger.debug('Token expired, refreshing login')
             if self.refresh_token:
                 self._access_response = refresh(self.client_id, self.host, self.refresh_token)
         else:
