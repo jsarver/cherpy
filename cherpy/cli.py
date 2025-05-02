@@ -98,7 +98,6 @@ def run_onestep_cli(env, object_name, onestep_name, scope):
 @env_option()
 @object_option()
 @output_option()
-@field_argument()
 def get_schema_cli(object_name, output_path=None, env=None):
     """
     Returns Schema information for a Cherwell object to the console or a file
