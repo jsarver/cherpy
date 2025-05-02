@@ -1,9 +1,37 @@
 import pprint
-
 import requests
 import os
-import sys
 from loguru import logger
+
+
+class CherpyError(Exception):
+    """Base exception class for Cherpy errors."""
+    pass
+
+
+class ObjectSummaryError(CherpyError):
+    """Exception raised when there's an error getting object summary."""
+    pass
+
+
+class ObjectNotFoundError(CherpyError):
+    """Exception raised when an object is not found."""
+    pass
+
+
+class OneStepError(CherpyError):
+    """Exception raised when there's an error with a OneStep operation."""
+    pass
+
+
+class OneStepNotFoundError(CherpyError):
+    """Exception raised when a OneStep is not found."""
+    pass
+
+
+class RunOneStepError(CherpyError):
+    """Exception raised when there's an error running a OneStep."""
+    pass
 
 
 def get_script_directory():
@@ -38,8 +66,9 @@ def get_object_summary(client, object_name):
     logger.info(f"Getting object summary for {object_name}")
     response = requests.get(url, headers=client.headers)
     if response.status_code != 200:
-        logger.error(f"Get object summary failed: {response.text}")
-        sys.exit(1)
+        error_msg = f"Get object summary failed: {response.text}"
+        logger.error(error_msg)
+        raise ObjectSummaryError(error_msg)
     data = response.json()
 
     # check if data is a list
@@ -48,8 +77,9 @@ def get_object_summary(client, object_name):
             data = data[0]
         return data
     else:
-        logger.error(f"{object_name} not found")
-        sys.exit(1)
+        error_msg = f"{object_name} not found"
+        logger.error(error_msg)
+        raise ObjectNotFoundError(error_msg)
 
 
 def get_onestep(client, association, scope, onestep_name):
@@ -67,9 +97,10 @@ def get_onestep(client, association, scope, onestep_name):
 
     response = requests.get(url, headers=client.headers)
     if response.status_code != 200:
-        logger.error(f"Get onestep failed: {response.json()['errorMessage']}")
+        error_msg = f"Get onestep failed: {response.json()['errorMessage']}"
+        logger.error(error_msg)
         # logger.error(pprint.pformat(response.json()))
-        sys.exit(1)
+        raise OneStepError(error_msg)
     data = response.json()
     onestep = _recurse_onestep(data['root'], onestep_name)
     if onestep:
@@ -77,9 +108,9 @@ def get_onestep(client, association, scope, onestep_name):
         logger.info(pprint.pformat(onestep))
         return onestep
     else:
-        error_message = f"Unable to find Onestep: {onestep_name} in association: {association}"
-        logger.error(error_message)
-        sys.exit(1)
+        error_msg = f"Unable to find Onestep: {onestep_name} in association: {association}"
+        logger.error(error_msg)
+        raise OneStepNotFoundError(error_msg)
 
 
 def run_onestep(client, association, onestep_name, scope):
@@ -99,6 +130,7 @@ def run_onestep(client, association, onestep_name, scope):
         response = requests.get(url, headers=client.headers)
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        logger.error(f"Attempt to run onestep {onestep_name} failed: {e}")
-        sys.exit(1)
+        error_msg = f"Attempt to run onestep {onestep_name} failed: {e}"
+        logger.error(error_msg)
+        raise RunOneStepError(error_msg)
     return response.json()
