@@ -322,7 +322,7 @@ def save_objects(client, object_records):
 
 def file_to_dataframe(file_path, file_type="excel"):
     try:
-        import pands as pd
+        import pandas as pd
     except Exception:
         pass
     if os.path.exists(file_path):
