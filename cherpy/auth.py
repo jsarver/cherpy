@@ -5,13 +5,19 @@ import os
 import datetime
 from functools import wraps
 from loguru import logger
+import sys
 
+# Check if requests is already in sys.modules
+requests = sys.modules.get('requests')
+
+# If it's not already imported, try to import it
+if requests is None:
+    try:
+        import requests
+    except ImportError as e:
+        raise ImportError("The 'requests' package is required but not installed. "
+                          "Please install it using 'pip install requests'") from e
 DEFAULT_CONFIG = {}
-
-try:
-    import requests
-except ImportError:
-    pass
 
 
 def check_expired(func):
