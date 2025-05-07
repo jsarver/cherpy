@@ -150,7 +150,7 @@ csm run-onestep --object-name Incident --onestep-name "Create Incident" --scope 
 ```python
 
 from cherpy.auth import config_from_env
-from cherpy.main import search_object
+from cherpy.api import search_object
 
 # create client using env variable which contains the config file path
 client = config_from_env("cherwell_dev")

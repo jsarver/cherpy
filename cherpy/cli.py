@@ -2,7 +2,7 @@ import json
 import click
 from cherpy import config_from_env, get_object_schema, update_object_from_file
 from cherpy.auth import config_from_file
-from cherpy.main import get_object_info, search_object, create_delete_requests, get_onestep, run_onestep
+from cherpy.api import get_object_info, search_object, create_delete_requests, get_onestep, run_onestep
 from cherpy.utils import get_save_file_path, get_open_file_path, dict_to_csv, create_temp_file
 from cherpy.objects import NameValueExtractor
 from loguru import logger
