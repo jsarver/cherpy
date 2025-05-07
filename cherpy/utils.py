@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import filedialog
-import attr
 import csv
 from loguru import logger
 
@@ -19,19 +18,6 @@ def get_open_file_path():
 
     file_path = filedialog.askopenfilename()
     return file_path
-
-
-@attr.s
-class NameValueExtractor(object):
-    """takes a response object and returns a data dict"""
-    response = attr.ib()
-
-    def create_dict(self):
-        dict_list = []
-        data = self.response.json()
-        for obj in data["businessObjects"]:
-            dict_list.append({field["name"]: field["value"] for field in obj["fields"]})
-        return dict_list
 
 
 def dict_to_csv(my_dict, columns, filename, **kwargs):

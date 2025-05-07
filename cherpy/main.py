@@ -5,8 +5,6 @@ import requests
 import attr
 from loguru import logger
 
-from cherpy.auth import create_headers_dict
-
 service_methods = {'getbusinessobjectsummary': {"url": "/api/V1/getbusinessobjectsummary/busobname"},
                    'getquicksearchresults': {"url": "/api/V1/getquicksearchresults"},
                    'getsearchresults': {"url": "/api/V1/getsearchresults"},
@@ -159,22 +157,6 @@ def create_delete_requests(object_schema, data_dict):
 
         request_list.append(delete_request)
     return {"deleteRequests": request_list}
-
-
-class searchResponse(object):
-    def __init__(self, raw_response):
-        self.data = raw_response
-        self.busobid = raw_response['busObId']
-        self.busobpublicid = raw_response['busObPublicId']
-        self.busobrecid = raw_response['busObRecId']
-
-    def field_list(self):
-        return sorted(i['name'] for i in self.data['fields'])
-
-    def __getattr__(self, attribute):
-        for i in self.data['fields']:
-            if i['name'].lower() == attribute.lower():
-                return i['value']
 
 
 def get_object_info(client, object_name=None, object_id=None):
@@ -364,18 +346,6 @@ def update_object_from_file(client, file_name: str, object_name: str, delimiter:
                 errors.append(f"{batch}:{row}")
         responses.append(response)
     return responses, errors
-
-
-class CherwellObjectRecord(object):
-    def __init__(self, busobid, recid, busobpublicid=None):
-        self.busobid = busobid
-        self.recid = recid
-        self.busobpublicid = busobpublicid if busobpublicid else ""
-
-    def key_dict(self):
-        return {"busObId": self.busobid,
-                "busObPublicId": self.busobpublicid,
-                "busObRecId": self.recid}
 
 
 def delete_object(c, objects, stop_on_error=True):

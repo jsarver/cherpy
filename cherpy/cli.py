@@ -3,7 +3,8 @@ import click
 from cherpy import config_from_env, get_object_schema, update_object_from_file
 from cherpy.auth import config_from_file
 from cherpy.main import get_object_info, search_object, create_delete_requests
-from cherpy.utils import get_save_file_path, NameValueExtractor, get_open_file_path, dict_to_csv, create_temp_file
+from cherpy.utils import get_save_file_path, get_open_file_path, dict_to_csv, create_temp_file
+from cherpy.objects import NameValueExtractor
 from cherpy.runonestep import run_onestep, get_onestep
 from loguru import logger
 
