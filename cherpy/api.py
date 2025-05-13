@@ -36,6 +36,7 @@ class ServiceRequest(object):
         return s['url']
 
 
+
 @attr.s
 class Fields(object):
     _fields = attr.ib()
@@ -230,13 +231,23 @@ def get_object_details(client, object_name, field_list=None, **kwargs):
 def search_object(client, object_id=None, object_name=None, **kwargs):
     """
     Should be used to search for objects
+
+    operators
+    eq Equals specified value
+    gt Greater than specified value
+    lt Less than specified value
+    contains Contains specified value
+    startswith Starts with specified value
+
     :param client:
     :param object_id:
     :param object_name:
     :param kwargs:
     :return:
+
     """
     schema = get_object_schema(client, object_name, object_id)
+
     data = {
         "filters": [
             {
@@ -276,6 +287,9 @@ def search_object(client, object_id=None, object_name=None, **kwargs):
         ]
     }
     data.update(**kwargs)
+    if kwargs.get('filters'):
+        data['filters'] = kwargs.get('filters')
+
     if kwargs.get('fields'):
         includeAllFields = "false"
         field_list = schema.create_field_list(kwargs.get('fields'))
@@ -435,7 +449,7 @@ def get_object_summary(client, object_name):
         raise ObjectSummaryError(error_msg)
     data = response.json()
 
-    # check if data is a list
+    # check if data was returned otherwise object wasn't found
     if data:
         if isinstance(data, list):
             data = data[0]
