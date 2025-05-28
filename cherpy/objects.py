@@ -60,13 +60,6 @@ class Fields(object):
                 field['dirty'] = True
                 self.__dict__['record']._object_dict['persist'] = True
 
-    # def mark_dirty(self):
-    #     for field in self.__dict__['field_dict']:
-    #         field['dirty'] = True
-    # def __str__(self):
-    #     return [row['name'] for row in self._field_dict]
-
-
 class CherwellRecordSet(object):
     def __init__(self, api_response):
         self.api_response = api_response
@@ -75,6 +68,16 @@ class CherwellRecordSet(object):
 
     def load_records(self):
         self.records = [CherwellRecord(row) for row in self.api_response.json()['businessObjects']]
+
+    def __iter__(self):
+        return iter(self.records)
+
+    def __repr__(self):
+        return f"<CherwellRecordSet {len(self.records)} records>"
+
+    def items(self):
+        return [record.items() for record in self.records]
+
 
 
 class CherwellRecord(object):
@@ -85,7 +88,13 @@ class CherwellRecord(object):
     def fields(self):
         return [f['name'] for f in self._object_dict['fields']]
 
+    def __repr__(self):
+        return f"<CherwellRecord {self._object_dict['busObPublicId']}>"
+
     def __getattr__(self, item):
         if item not in self._object_dict:
             return self.field.__getattr__(item)
         return self._object_dict[item]
+
+    def items(self):
+        return {i['displayName']:i['value'] for i in self._object_dict['fields']}
