@@ -1,5 +1,34 @@
 import attr
 
+class SearchFilter(object):
+    def __init__(self, text=None, field=None, operator=None, value=None):
+        self.field = field
+        self.operator = operator
+        self.value = value
+        self.text = text
+        if text:
+            self.from_text(text)
+
+    def from_text(self, filter_text):
+        """
+        takes filter_text, splits it into field, operator and value
+        :param String:
+        :return:
+        """
+        field, operator, *value = filter_text.split(' ')
+        self.field = field.strip()
+        self.operator = operator.strip()
+        if len(value) > 1:
+            value = ' '.join(value)
+        else:
+            value = value[0]
+        self.value = value.strip()
+
+    def __repr__(self):
+        return f"search_filter({self.field}, {self.operator}, {self.value})"
+
+    def to_dict(self):
+        return {"field": self.field, "operator": self.operator, "value": self.value}
 
 class searchResponse(object):
     def __init__(self, raw_response):
@@ -12,10 +41,14 @@ class searchResponse(object):
         return sorted(i['name'] for i in self.data['fields'])
 
     def __getattr__(self, attribute):
+        value = None
         for i in self.data['fields']:
             if i['name'].lower() == attribute.lower():
-                return i['value']
-
+                value = i['value']
+                break
+        if not value:
+            raise AttributeError(f"Attribute {attribute} not found in response")
+        return value
 
 class CherwellObjectRecord(object):
     def __init__(self, busobid, recid, busobpublicid=None):
@@ -45,7 +78,7 @@ class NameValueExtractor(object):
 class Fields(object):
     def __init__(self, field_dict, record):
         self.__dict__['field_dict'] = field_dict
-        self.__dict__['record'] = record
+        # self.__dict__['record'] = record
 
     def __getattr__(self, item):
         for field in self.__dict__['field_dict']:

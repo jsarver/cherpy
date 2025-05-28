@@ -228,23 +228,27 @@ def get_object_details(client, object_name, field_list=None, **kwargs):
     return obj
 
 
-def search_object(client, object_id=None, object_name=None, **kwargs):
+def search_object(client: object, object_id: str = None, object_name: str = None, filters: list = None,
+                  **kwargs) -> requests.Response:
     """
-    Should be used to search for objects
+    Search for objects in Cherwell using specified criteria.
 
-    operators
+    operators:
     eq Equals specified value
     gt Greater than specified value
     lt Less than specified value
     contains Contains specified value
     startswith Starts with specified value
 
-    :param client:
-    :param object_id:
-    :param object_name:
-    :param kwargs:
-    :return:
-
+    :param client: The Cherwell client instance
+    :param object_id: The ID of the business object to search
+    :param object_name: The name of the business object to search
+    :param filters: List containing filters criteria
+    :param kwargs: Additional arguments including:
+                  - includeSchema (str): Whether to include schema in results
+                  - pageSize (int): Number of results per page
+                  - fields (list): List of specific fields to return
+    :return: Response object containing search results
     """
     schema = get_object_schema(client, object_name, object_id)
 
@@ -287,8 +291,15 @@ def search_object(client, object_id=None, object_name=None, **kwargs):
         ]
     }
     data.update(**kwargs)
-    if kwargs.get('filters'):
-        data['filters'] = kwargs.get('filters')
+
+    if filters:
+        filter_list = []
+        for filter in filters:
+
+            f= filter.to_dict()
+            f['fieldId'] = schema.get_fieldId(f.pop('field'))
+            filter_list.append(f)
+        data['filters'] = filter_list
 
     if kwargs.get('fields'):
         includeAllFields = "false"
